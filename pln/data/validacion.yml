@@ -1,0 +1,115 @@
+# Conjunto de VALIDACIÓN (RF-02): frases que NO están en el entrenamiento.
+# El criterio de aceptación es acertar la intención en al menos el 85 % de los casos.
+# Se evalúa con: python -m app.evaluar
+saludo:
+  - "Hola"
+  - "buenas tardes señor asistente"
+  - "holi"
+despedida:
+  - "bueno chao gracias"
+  - "me despido"
+agradecimiento:
+  - "muchísimas gracias"
+  - "ok listo gracias"
+info_admisiones:
+  - "¿qué tengo que hacer para entrar a estudiar a la UPTC?"
+  - "quiero ser aspirante a derecho"
+requisitos_admision:
+  - "¿qué papeles me piden para inscribirme?"
+  - "¿cuánto icfes necesito para entrar?"
+resultados_admision:
+  - "¿ya publicaron los admitidos?"
+  - "quiero saber si me admitieron"
+transferencia:
+  - "quiero cambiarme de programa"
+  - "¿cómo hago transferencia de la UNAD a la UPTC?"
+consulta_matricula:
+  - "¿en qué fechas son las matrículas del próximo semestre?"
+  - "¿cuándo cierran matrículas?"
+pasos_matricula:
+  - "¿cómo descargo el recibo para pagar la matrícula?"
+  - "¿qué pasos sigo para matricularme?"
+costo_matricula:
+  - "¿cuánto se paga de matrícula?"
+  - "valor del semestre"
+descuentos_matricula:
+  - "¿aplican descuento con el certificado electoral?"
+  - "¿puedo pagar la matrícula a cuotas?"
+adicion_asignaturas:
+  - "¿cómo inscribo una materia que me faltó?"
+  - "quiero cambiar de grupo en cálculo"
+calendario_academico:
+  - "¿cuándo arrancan las clases?"
+  - "¿qué fecha terminan las clases?"
+horarios_clases:
+  - "¿dónde consulto el horario de mis materias?"
+  - "¿en qué aula es mi clase de física?"
+consulta_notas:
+  - "¿cómo veo las notas del parcial final?"
+  - "¿dónde miro mi promedio?"
+cancelacion_asignaturas:
+  - "quiero cancelar física"
+  - "¿hasta qué fecha se pueden cancelar materias?"
+reintegro_aplazamiento:
+  - "me salí hace un año y quiero volver"
+  - "¿cómo aplazo el semestre?"
+homologacion:
+  - "¿me homologan las materias del SENA?"
+  - "quiero validar una asignatura"
+doble_programa:
+  - "¿se pueden estudiar dos carreras a la vez?"
+  - "quiero hacer un segundo programa"
+requisitos_grado:
+  - "¿qué requisitos hay para el grado?"
+  - "¿cuándo son los grados?"
+suficiencia_idioma:
+  - "¿qué nivel de inglés piden para graduarme?"
+  - "¿cómo acredito la segunda lengua?"
+practicas_profesionales:
+  - "¿cómo inscribo la pasantía?"
+  - "¿qué opciones de trabajo de grado hay?"
+orientacion_primer_semestre:
+  - "soy nuevo en la universidad y no sé qué hacer"
+  - "¿cuándo hacen la inducción para los nuevos?"
+carnet_estudiantil:
+  - "¿cómo pido el carnet de estudiante?"
+  - "se me perdió el carné"
+certificado_estudio:
+  - "necesito un certificado de estudios para el trabajo"
+  - "¿cómo saco una constancia de matrícula?"
+pqrs:
+  - "quiero poner un reclamo"
+  - "¿dónde hago una petición?"
+horario_atencion:
+  - "¿a qué hora abren las oficinas?"
+  - "¿atienden el sábado?"
+sedes_ubicacion:
+  - "¿la UPTC tiene sede en Chiquinquirá?"
+  - "¿dónde queda la sede de Tunja?"
+correo_institucional_activar:
+  - "no tengo correo institucional todavía"
+  - "¿cómo activo el correo de la UPTC?"
+correo_recuperar_contrasena:
+  - "olvidé la clave del correo institucional"
+  - "me bloquearon el correo"
+acceso_plataformas:
+  - "no me deja entrar al aula virtual"
+  - "la plataforma me sale con error"
+red_wifi:
+  - "¿cómo me conecto a la red wifi de la universidad?"
+  - "no tengo internet en la sede"
+bienestar_universitario:
+  - "¿hay psicólogos en la universidad?"
+  - "¿cómo pido el subsidio de alimentación?"
+biblioteca:
+  - "¿cómo presto un libro en la biblioteca?"
+  - "¿la biblioteca abre los sábados?"
+nlu_fallback:
+  - "¿quién ganó el mundial?"
+  - "receta de pasta con pollo"
+  - "¿cuánto está el dólar hoy?"
+  - "cuéntame algo divertido"
+  - "¿quién es Shakira?"
+  - "quiero comprar un carro"
+  - "¿cuál es el mejor celular?"
+  - "ayúdame con mi tarea de química"

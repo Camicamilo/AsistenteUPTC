@@ -4,3 +4,10 @@ dist
 .env.local
 *.log
 .DS_Store
+target/
+__pycache__/
+.pytest_cache/
+.idea/
+*.iml
+backend/data/
+pln/modelos/

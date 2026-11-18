@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react()],
+    test: {
+      environment: 'jsdom',
+    },
     server: {
       port: 5173,
       proxy: {

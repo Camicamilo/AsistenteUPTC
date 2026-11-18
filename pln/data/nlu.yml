@@ -1,0 +1,437 @@
+# ARCHIVO GENERADO por scripts/generar_datos.py — no editar a mano.
+# Formato Rasa 3: sirve tanto para el servicio PLN liviano como para `rasa train nlu`.
+version: "3.1"
+nlu:
+- intent: saludo
+  examples: |
+    - Hola
+    - Buenas tardes
+    - Buenos días, una pregunta
+    - Buenas noches
+    - hola buenas
+    - Hey
+    - Saludos
+    - Qué más, hola
+    - holaa
+    - Buen día
+    - Hola, ¿cómo estás?
+    - Buenas, ¿me puedes ayudar?
+- intent: despedida
+  examples: |
+    - Chao
+    - Hasta luego
+    - Adiós
+    - Nos vemos
+    - bye
+    - Hasta pronto
+    - Me voy, chao
+    - Eso era todo, adiós
+    - Hasta mañana
+    - chaito
+- intent: agradecimiento
+  examples: |
+    - Gracias
+    - Muchas gracias
+    - Listo, perfecto
+    - Mil gracias
+    - Te agradezco
+    - Genial, gracias
+    - Ok gracias
+    - Vale, muy amable
+    - Perfecto, me sirvió
+    - gracias por la ayuda
+- intent: info_admisiones
+  examples: |
+    - ¿Cómo me inscribo como aspirante?
+    - Quiero entrar a estudiar a la UPTC
+    - Proceso de admisión a pregrado
+    - ¿Cómo hago la inscripción para entrar a la universidad?
+    - Quiero inscribirme a una carrera
+    - ¿Dónde me inscribo para el próximo semestre como nuevo?
+    - Información sobre admisiones
+    - Pasos para ser admitido en la UPTC
+    - ¿Cuándo abren inscripciones para aspirantes?
+    - Me quiero presentar a ingeniería de sistemas
+    - como me inscribo a la uptc
+    - Proceso para aspirantes nuevos
+- intent: requisitos_admision
+  examples: |
+    - ¿Qué requisitos piden para entrar?
+    - ¿Qué papeles necesito para la admisión?
+    - ¿Cuánto puntaje del ICFES piden?
+    - Documentos para inscribirme como aspirante
+    - ¿Qué necesito para que me admitan?
+    - ¿Piden el resultado de las pruebas Saber 11?
+    - Requisitos de admisión
+    - ¿Con qué puntaje entro a medicina?
+    - qué documentos piden para entrar
+    - ¿Hay que presentar examen de admisión?
+- intent: resultados_admision
+  examples: |
+    - ¿Cómo sé si quedé admitido?
+    - Resultados de admisión
+    - ¿Dónde consulto el estado de mi proceso?
+    - ¿Ya salieron los admitidos?
+    - ¿Cuándo publican la lista de admitidos?
+    - Quiero saber si pasé a la universidad
+    - ¿Dónde veo si me aceptaron?
+    - lista de admitidos
+    - ¿Qué hago si quedé admitida?
+    - Consultar resultado de inscripción
+- intent: transferencia
+  examples: |
+    - ¿Cómo me cambio de carrera?
+    - Quiero hacer transferencia desde otra universidad
+    - Transferencia interna
+    - ¿Puedo pasarme a otro programa dentro de la UPTC?
+    - Vengo de otra universidad y quiero seguir acá
+    - Cambio de programa académico
+    - Requisitos para transferencia externa
+    - me quiero cambiar de ingeniería a otra carrera
+    - ¿Se puede cambiar de sede?
+    - Transferirme a la UPTC
+- intent: consulta_matricula
+  examples: |
+    - ¿Cuándo son las matrículas?
+    - Fecha de matrícula por favor
+    - ¿Cuándo abren matrículas para el próximo semestre?
+    - ¿Hasta cuándo hay plazo para matricularme?
+    - Fechas de matrícula extemporánea
+    - ¿Cuándo es la matrícula ordinaria?
+    - cuando son las matriculas
+    - ¿Ya empezaron las matrículas?
+    - Periodo de matrícula 2027-I
+    - ¿Me puedo matricular tarde?
+    - ¿Qué día se cierra la matrícula?
+    - Plazo de matrículas
+- intent: pasos_matricula
+  examples: |
+    - ¿Cómo hago la matrícula?
+    - ¿Dónde descargo el recibo de pago?
+    - Necesito el PIN para matricularme
+    - Pasos para matricularme
+    - ¿Cómo pago la matrícula?
+    - No me aparece el recibo de liquidación
+    - ¿Qué es la matrícula financiera?
+    - ya pagué, ¿ahora qué hago para matricularme?
+    - ¿Dónde inscribo las materias?
+    - Matrícula académica paso a paso
+    - recibo de matricula
+    - ¿Cómo me matriculo?
+- intent: costo_matricula
+  examples: |
+    - ¿Cuánto vale la matrícula?
+    - ¿Cuánto cuesta el semestre?
+    - Valor de la matrícula
+    - ¿Por qué mi recibo salió tan caro?
+    - ¿Cómo calculan lo que pago de matrícula?
+    - precio del semestre en la uptc
+    - ¿La matrícula depende del estrato?
+    - ¿Cuánto me toca pagar?
+    - Costo de la matrícula para primer semestre
+    - ¿Es cara la UPTC?
+- intent: descuentos_matricula
+  examples: |
+    - ¿Hay descuentos en la matrícula?
+    - ¿Cómo aplico a matrícula cero?
+    - Descuento por votación
+    - ¿Dan descuento por buen promedio?
+    - Exención de pago de matrícula
+    - ¿Puedo pagar la matrícula por cuotas?
+    - Quiero un descuento en el recibo
+    - ¿Qué apoyos hay para pagar el semestre?
+    - descuento por certificado electoral
+    - ¿Hay financiación para la matrícula?
+- intent: adicion_asignaturas
+  examples: |
+    - ¿Cómo agrego una materia?
+    - Quiero adicionar una asignatura
+    - ¿Puedo cambiarme de grupo?
+    - No alcancé cupo en una materia
+    - Adición de créditos
+    - ¿Cuándo es el periodo de adiciones?
+    - Me falta inscribir una materia
+    - quiero meter otra materia
+    - Cambio de horario de una asignatura
+    - ¿Cuántos créditos puedo inscribir?
+- intent: calendario_academico
+  examples: |
+    - ¿Dónde veo el calendario académico?
+    - ¿Cuándo empiezan las clases?
+    - ¿Cuándo son las vacaciones?
+    - ¿Cuándo termina el semestre?
+    - Fechas de parciales
+    - ¿Cuándo son los exámenes finales?
+    - calendario del semestre
+    - ¿Qué día inician clases el otro semestre?
+    - ¿Hay semana de receso?
+    - ¿Cuándo se acaba el semestre?
+    - Fechas importantes del semestre
+    - ¿Cuándo es la semana de finales?
+- intent: horarios_clases
+  examples: |
+    - ¿Dónde veo mi horario?
+    - ¿En qué salón tengo clase?
+    - Horario de clases
+    - No sé dónde me toca la clase
+    - ¿Cómo consulto el salón de una materia?
+    - mi horario
+    - ¿Dónde aparece el aula de cada materia?
+    - ¿A qué hora tengo clase?
+    - No me aparece el salón en el horario
+    - Ver horario del semestre
+- intent: consulta_notas
+  examples: |
+    - ¿Dónde veo mis notas?
+    - ¿Cómo consulto mis calificaciones?
+    - Quiero ver mi promedio
+    - ¿Ya subieron las notas finales?
+    - No me aparece una nota
+    - notas del semestre
+    - ¿Dónde veo el promedio acumulado?
+    - Consultar historial académico
+    - ¿Cuándo suben las notas?
+    - Una nota quedó mal registrada
+- intent: cancelacion_asignaturas
+  examples: |
+    - ¿Cómo cancelo una materia?
+    - Quiero retirar una asignatura
+    - Cancelación de semestre
+    - ¿Hasta cuándo puedo cancelar materias?
+    - Quiero cancelar el semestre completo
+    - me va mal en una materia, ¿la puedo cancelar?
+    - Retiro de asignatura
+    - ¿Cancelar una materia afecta el promedio?
+    - Plazo para cancelar asignaturas
+    - cancelar materia
+- intent: reintegro_aplazamiento
+  examples: |
+    - ¿Cómo solicito reintegro?
+    - Quiero aplazar el semestre
+    - Reserva de cupo
+    - Me retiré y quiero volver a estudiar
+    - ¿Cómo retomo la carrera?
+    - Aplazamiento de semestre
+    - quiero reintegrarme
+    - ¿Puedo congelar el semestre?
+    - Estuve por fuera un año, ¿cómo vuelvo?
+    - Solicitud de reintegro
+- intent: homologacion
+  examples: |
+    - Homologación de materias de otra universidad
+    - ¿Cómo homologo asignaturas?
+    - Quiero validar una materia
+    - Vengo del SENA, ¿me homologan algo?
+    - Reconocimiento de créditos
+    - ¿Me pueden homologar materias que ya vi?
+    - homologar materias
+    - ¿Qué es un examen de validación?
+    - Equivalencia de asignaturas
+    - ¿Cuántas materias puedo homologar?
+- intent: doble_programa
+  examples: |
+    - ¿Puedo hacer doble programa?
+    - Quiero estudiar dos carreras
+    - Doble titulación
+    - ¿Se puede ver dos programas a la vez?
+    - Requisitos para doble programa
+    - estudiar dos carreras al tiempo en la uptc
+    - ¿Cómo aplico a un segundo programa?
+    - Simultaneidad de programas
+- intent: requisitos_grado
+  examples: |
+    - ¿Qué necesito para graduarme?
+    - Requisitos de grado
+    - ¿Cuándo son las ceremonias de grado?
+    - Trámite para el grado
+    - Paz y salvo para graduarme
+    - ¿Cómo solicito el grado?
+    - fechas de grado
+    - ¿Qué documentos piden para el grado?
+    - Ya terminé materias, ¿cómo me gradúo?
+    - Inscripción a grados
+- intent: suficiencia_idioma
+  examples: |
+    - ¿Piden inglés para graduarse?
+    - Requisito de segunda lengua
+    - Examen de suficiencia en inglés
+    - ¿Cómo certifico el inglés?
+    - ¿Sirve el TOEFL para el requisito?
+    - suficiencia de ingles
+    - ¿Hay cursos de inglés en la universidad?
+    - ¿Qué nivel de inglés exigen?
+- intent: practicas_profesionales
+  examples: |
+    - ¿Cómo hago las prácticas?
+    - Información sobre pasantías
+    - ¿Cuándo puedo hacer la práctica profesional?
+    - Opciones de grado
+    - ¿La pasantía cuenta como trabajo de grado?
+    - Busco empresa para las prácticas
+    - practicas profesionales
+    - ¿Qué modalidades de trabajo de grado hay?
+- intent: orientacion_primer_semestre
+  examples: |
+    - Soy nuevo, ¿por dónde empiezo?
+    - Información para primer semestre
+    - ¿Cuándo es la inducción?
+    - Soy primíparo y estoy perdido
+    - ¿Qué tengo que hacer al entrar a la universidad?
+    - Recién admitido, ¿qué sigue?
+    - Guía para estudiantes nuevos
+    - no sé nada de la universidad, soy nueva
+    - Jornada de inducción
+    - Primeros pasos en la UPTC
+- intent: carnet_estudiantil
+  examples: |
+    - ¿Cómo saco el carnet?
+    - Necesito el plástico ese de estudiante
+    - Perdí el carné, ¿cómo pido un duplicado?
+    - ¿Dónde reclamo el carnet estudiantil?
+    - Se me perdió el carnet
+    - ¿Cuándo entregan los carnés?
+    - carnet de la universidad
+    - Foto para el carné
+    - Duplicado de carné estudiantil
+    - ¿El carnet tiene costo?
+- intent: certificado_estudio
+  examples: |
+    - ¿Cómo pido un certificado de estudio?
+    - Necesito una constancia de que estudio
+    - Certificado de notas
+    - Constancia de matrícula
+    - ¿Cuánto se demora un certificado?
+    - Necesito un certificado para el trabajo
+    - certificado de estudios
+    - ¿Dónde solicito una constancia?
+    - Certificado de calificaciones para una beca
+    - Pedir certificado
+- intent: pqrs
+  examples: |
+    - Quiero poner una queja
+    - ¿Dónde radico un PQRS?
+    - Tengo un reclamo
+    - Quiero hacer una sugerencia
+    - Derecho de petición
+    - ¿Cómo presento una queja contra una dependencia?
+    - pqr
+    - Quiero reclamar por un mal servicio
+    - Necesito radicar una petición
+- intent: horario_atencion
+  examples: |
+    - ¿A qué hora atienden?
+    - Horario de atención de Registro
+    - ¿Cuál es el teléfono de admisiones?
+    - ¿Atienden los sábados?
+    - Contacto de las oficinas
+    - ¿Cómo me comunico con la universidad?
+    - horario de oficina
+    - ¿Hasta qué hora abren las oficinas?
+    - Correo de contacto de la universidad
+- intent: sedes_ubicacion
+  examples: |
+    - ¿Qué sedes tiene la UPTC?
+    - ¿Dónde queda la sede de Sogamoso?
+    - Dirección de la universidad
+    - ¿La UPTC tiene sede en Duitama?
+    - Ubicación de las seccionales
+    - ¿Dónde queda la sede central?
+    - sedes de la uptc
+    - ¿En qué ciudades está la UPTC?
+- intent: correo_institucional_activar
+  examples: |
+    - ¿Cómo activo mi correo institucional?
+    - No tengo correo de la universidad
+    - Crear cuenta de email UPTC
+    - ¿Cuándo me dan el correo @uptc.edu.co?
+    - Activar correo institucional
+    - no me ha llegado el correo de la universidad
+    - ¿Cuál es mi correo institucional?
+    - ¿Cómo entro al correo de la UPTC?
+    - Necesito mi cuenta institucional
+    - Primer ingreso al correo institucional
+- intent: correo_recuperar_contrasena
+  examples: |
+    - Olvidé la contraseña del correo
+    - Mi cuenta está bloqueada
+    - Recuperar clave
+    - No me acuerdo de la contraseña
+    - Restablecer contraseña institucional
+    - me bloquearon la cuenta
+    - ¿Cómo cambio mi contraseña?
+    - Perdí la clave del correo
+    - olvide mi clave
+    - Contraseña incorrecta y no puedo entrar al correo
+- intent: acceso_plataformas
+  examples: |
+    - No puedo entrar a la plataforma
+    - El aula virtual no me funciona
+    - Me sale error al ingresar
+    - La plataforma académica no carga
+    - No puedo ingresar al aula virtual
+    - error en la plataforma
+    - Moodle no me deja entrar
+    - La página de la universidad está caída
+    - No me abre el sistema de notas
+    - Problema técnico con la plataforma
+- intent: red_wifi
+  examples: |
+    - ¿Cómo me conecto al wifi?
+    - ¿Cuál es la clave del internet de la universidad?
+    - No me conecta la red inalámbrica
+    - wifi de la uptc
+    - El internet de la biblioteca no sirve
+    - ¿Hay wifi para estudiantes?
+    - Conectarme a la red de la universidad
+    - no tengo internet en el campus
+- intent: bienestar_universitario
+  examples: |
+    - ¿Hay servicio de psicología?
+    - Información del restaurante estudiantil
+    - ¿Qué apoyos da Bienestar?
+    - ¿Hay becas para estudiantes?
+    - Quiero inscribirme a un deporte
+    - ¿Dónde está el servicio médico?
+    - Subsidio de alimentación
+    - bienestar universitario
+    - Necesito hablar con un psicólogo
+    - ¿Hay grupos culturales?
+    - Apoyo socioeconómico
+- intent: biblioteca
+  examples: |
+    - ¿Cuál es el horario de la biblioteca?
+    - ¿Cómo pido un libro prestado?
+    - Acceso a bases de datos
+    - ¿Puedo renovar un préstamo?
+    - Biblioteca virtual
+    - ¿Hasta qué hora abre la biblioteca?
+    - préstamo de libros
+    - ¿Cómo entro a las bases de datos desde la casa?
+    - Multa por entregar tarde un libro
+- intent: nlu_fallback
+  examples: |
+    - ¿Quién ganó el partido de ayer?
+    - ¿Cómo va a estar el clima mañana?
+    - Cuéntame un chiste
+    - ¿Cuál es la capital de Francia?
+    - Recomiéndame una película
+    - ¿Cómo hago arepas?
+    - Necesito hablar con mi profesor de cálculo
+    - ¿Me pueden cambiar la nota del parcial?
+    - Tengo un problema con mi pago de hace dos semestres
+    - ¿Dónde queda la oficina del decano?
+    - ¿Cuánto cuesta un iPhone?
+    - Resuélveme este ejercicio de derivadas
+    - ¿Qué es la vida?
+    - Pon música
+    - ¿Quién es el presidente de Colombia?
+    - ¿Me prestas plata?
+    - Escríbeme un ensayo de filosofía
+    - ¿A qué hora juega la selección?
+    - Dame el número de un domicilio de pizza
+    - ¿Cómo arreglo mi moto?
+    - asdfgh
+    - ¿Qué opinas de la política?
+    - Hazme la tarea de programación
+    - ¿Cómo se juega billar?
+    - ¿Dónde venden buenas empanadas?

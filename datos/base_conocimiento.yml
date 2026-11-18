@@ -1,0 +1,710 @@
+# =============================================================================
+# BASE DE CONOCIMIENTO DEL ASISTENTE VIRTUAL UPTC
+# -----------------------------------------------------------------------------
+# Fuente única de datos. A partir de este archivo se generan:
+#   - pln/data/nlu.yml                                 (entrenamiento del motor PLN, formato Rasa 3)
+#   - backend/src/main/resources/db/migration/V2__semilla.sql  (semilla de la base de datos)
+# Comando: python scripts/generar_datos.py
+#
+# IMPORTANTE (RD-01, RD-03, RD-04): los textos, correos y enlaces son de
+# DEMOSTRACIÓN. Antes del piloto el enlace institucional debe validarlos o
+# reemplazarlos por los oficiales. Las respuestas no inventan fechas ni valores:
+# remiten al calendario o a la dependencia que publica el dato oficial.
+# =============================================================================
+
+dependencias:
+  - clave: admisiones
+    nombre: Dirección de Admisiones
+    correo: admisiones@uptc.edu.co
+    telefono: ""
+    enlace: https://www.uptc.edu.co/sitio/portal/front/index.html
+    horario: Lunes a viernes, horario de oficina
+  - clave: registro
+    nombre: Registro y Control Académico
+    correo: registro.academico@uptc.edu.co
+    telefono: ""
+    enlace: https://www.uptc.edu.co/sitio/portal/front/index.html
+    horario: Lunes a viernes, horario de oficina
+  - clave: tecnologia
+    nombre: Línea de Atención – DTIC
+    correo: soporte.dtic@uptc.edu.co
+    telefono: ""
+    enlace: https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/09_linea_aten.html
+    horario: Lunes a viernes, horario de oficina
+  - clave: bienestar
+    nombre: Bienestar Universitario
+    correo: bienestar@uptc.edu.co
+    telefono: ""
+    enlace: https://www.uptc.edu.co/sitio/portal/front/index.html
+    horario: Lunes a viernes, horario de oficina
+  - clave: academica
+    nombre: Vicerrectoría Académica
+    correo: vicerrectoria.academica@uptc.edu.co
+    telefono: ""
+    enlace: https://www.uptc.edu.co/sitio/portal/front/index.html
+    horario: Lunes a viernes, horario de oficina
+  - clave: general
+    nombre: Atención al Ciudadano
+    correo: atencion.ciudadano@uptc.edu.co
+    telefono: ""
+    enlace: https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/09_linea_aten.html
+    horario: Lunes a viernes, horario de oficina
+
+temas_rapidos:
+  - { id: matriculas, etiqueta: Matrículas, consulta: "¿Cuándo son las matrículas?" }
+  - { id: admisiones, etiqueta: Admisiones, consulta: "¿Cómo me inscribo como aspirante?" }
+  - { id: calendario, etiqueta: Calendario académico, consulta: "¿Dónde veo el calendario académico?" }
+  - { id: correo, etiqueta: Correo institucional, consulta: "¿Cómo activo mi correo institucional?" }
+  - { id: tramites, etiqueta: Trámites, consulta: "¿Cómo pido un certificado de estudio?" }
+
+# Frases que NO pertenecen al dominio. Entrenan la clase especial "nlu_fallback"
+# (mismo nombre que usa Rasa) para que el asistente escale en vez de inventar.
+fuera_de_dominio:
+  - ¿Quién ganó el partido de ayer?
+  - ¿Cómo va a estar el clima mañana?
+  - Cuéntame un chiste
+  - ¿Cuál es la capital de Francia?
+  - Recomiéndame una película
+  - ¿Cómo hago arepas?
+  - Necesito hablar con mi profesor de cálculo
+  - ¿Me pueden cambiar la nota del parcial?
+  - Tengo un problema con mi pago de hace dos semestres
+  - ¿Dónde queda la oficina del decano?
+  - ¿Cuánto cuesta un iPhone?
+  - Resuélveme este ejercicio de derivadas
+  - ¿Qué es la vida?
+  - Pon música
+  - ¿Quién es el presidente de Colombia?
+  - ¿Me prestas plata?
+  - Escríbeme un ensayo de filosofía
+  - ¿A qué hora juega la selección?
+  - Dame el número de un domicilio de pizza
+  - ¿Cómo arreglo mi moto?
+  - asdfgh
+  - ¿Qué opinas de la política?
+  - Hazme la tarea de programación
+  - ¿Cómo se juega billar?
+  - ¿Dónde venden buenas empanadas?
+
+intenciones:
+  # ---------------------------------------------------------------- sociales
+  - nombre: saludo
+    categoria: administrativo
+    descripcion: Saludos iniciales del estudiante.
+    dependencia: general
+    social: true
+    ejemplos:
+      - Hola
+      - Buenas tardes
+      - Buenos días, una pregunta
+      - Buenas noches
+      - hola buenas
+      - Hey
+      - Saludos
+      - Qué más, hola
+      - holaa
+      - Buen día
+      - Hola, ¿cómo estás?
+      - Buenas, ¿me puedes ayudar?
+    respuestas:
+      - ¡Hola! Soy el Asistente Virtual de la UPTC. Puedo orientarte sobre admisiones, matrículas, calendario académico, correo institucional y trámites. ¿En qué te ayudo?
+      - ¡Hola! Cuéntame qué necesitas: admisiones, matrículas, calendario, correo institucional o algún trámite.
+
+  - nombre: despedida
+    categoria: administrativo
+    descripcion: Cierre de la conversación.
+    dependencia: general
+    social: true
+    ejemplos:
+      - Chao
+      - Hasta luego
+      - Adiós
+      - Nos vemos
+      - bye
+      - Hasta pronto
+      - Me voy, chao
+      - Eso era todo, adiós
+      - Hasta mañana
+      - chaito
+    respuestas:
+      - ¡Hasta pronto! Si te surge otra duda, aquí estaré a cualquier hora.
+
+  - nombre: agradecimiento
+    categoria: administrativo
+    descripcion: El estudiante agradece la respuesta.
+    dependencia: general
+    social: true
+    ejemplos:
+      - Gracias
+      - Muchas gracias
+      - Listo, perfecto
+      - Mil gracias
+      - Te agradezco
+      - Genial, gracias
+      - Ok gracias
+      - Vale, muy amable
+      - Perfecto, me sirvió
+      - gracias por la ayuda
+    respuestas:
+      - ¡Con gusto! ¿Hay algo más en lo que te pueda ayudar?
+
+  # ---------------------------------------------------------------- admisiones
+  - nombre: info_admisiones
+    categoria: administrativo
+    descripcion: Cómo inscribirse como aspirante a un programa de pregrado.
+    dependencia: admisiones
+    ejemplos:
+      - ¿Cómo me inscribo como aspirante?
+      - Quiero entrar a estudiar a la UPTC
+      - Proceso de admisión a pregrado
+      - ¿Cómo hago la inscripción para entrar a la universidad?
+      - Quiero inscribirme a una carrera
+      - ¿Dónde me inscribo para el próximo semestre como nuevo?
+      - Información sobre admisiones
+      - Pasos para ser admitido en la UPTC
+      - ¿Cuándo abren inscripciones para aspirantes?
+      - Me quiero presentar a ingeniería de sistemas
+      - como me inscribo a la uptc
+      - Proceso para aspirantes nuevos
+    respuestas:
+      - "El proceso de admisión lo coordina la Dirección de Admisiones. En general: 1) revisa la oferta de programas y sus requisitos en el portal institucional, 2) diligencia la inscripción en línea dentro de las fechas del calendario de admisiones vigente, 3) paga el derecho de inscripción y 4) consulta los resultados en la fecha publicada. Más información: https://www.uptc.edu.co"
+
+  - nombre: requisitos_admision
+    categoria: administrativo
+    descripcion: Documentos y requisitos para ser admitido.
+    dependencia: admisiones
+    ejemplos:
+      - ¿Qué requisitos piden para entrar?
+      - ¿Qué papeles necesito para la admisión?
+      - ¿Cuánto puntaje del ICFES piden?
+      - Documentos para inscribirme como aspirante
+      - ¿Qué necesito para que me admitan?
+      - ¿Piden el resultado de las pruebas Saber 11?
+      - Requisitos de admisión
+      - ¿Con qué puntaje entro a medicina?
+      - qué documentos piden para entrar
+      - ¿Hay que presentar examen de admisión?
+    respuestas:
+      - Los requisitos dependen del programa y de la modalidad de ingreso. Normalmente se solicita el documento de identidad, el resultado de la prueba Saber 11 y los soportes que indique la convocatoria. Revisa la convocatoria vigente de la Dirección de Admisiones en https://www.uptc.edu.co antes de inscribirte.
+
+  - nombre: resultados_admision
+    categoria: administrativo
+    descripcion: Consulta de resultados o estado del proceso de admisión.
+    dependencia: admisiones
+    ejemplos:
+      - ¿Cómo sé si quedé admitido?
+      - Resultados de admisión
+      - ¿Dónde consulto el estado de mi proceso?
+      - ¿Ya salieron los admitidos?
+      - ¿Cuándo publican la lista de admitidos?
+      - Quiero saber si pasé a la universidad
+      - ¿Dónde veo si me aceptaron?
+      - lista de admitidos
+      - ¿Qué hago si quedé admitida?
+      - Consultar resultado de inscripción
+    respuestas:
+      - Los resultados de admisión se publican en el portal institucional en la fecha fijada por el calendario de admisiones. Si fuiste admitido, allí mismo encontrarás las instrucciones para la matrícula de primer semestre.
+
+  - nombre: transferencia
+    categoria: administrativo
+    descripcion: Transferencia interna (cambio de programa) o externa (desde otra universidad).
+    dependencia: admisiones
+    ejemplos:
+      - ¿Cómo me cambio de carrera?
+      - Quiero hacer transferencia desde otra universidad
+      - Transferencia interna
+      - ¿Puedo pasarme a otro programa dentro de la UPTC?
+      - Vengo de otra universidad y quiero seguir acá
+      - Cambio de programa académico
+      - Requisitos para transferencia externa
+      - me quiero cambiar de ingeniería a otra carrera
+      - ¿Se puede cambiar de sede?
+      - Transferirme a la UPTC
+    respuestas:
+      - Las transferencias internas (cambio de programa o de sede) y externas (desde otra institución) se tramitan dentro de las fechas que fija el calendario de admisiones y según el Reglamento Estudiantil. Revisa la convocatoria vigente en el portal y, si tienes dudas sobre tu caso, escribe a la Dirección de Admisiones.
+
+  # ---------------------------------------------------------------- matrícula
+  - nombre: consulta_matricula
+    categoria: académico
+    descripcion: Fechas y periodos de matrícula.
+    dependencia: registro
+    ejemplos:
+      - ¿Cuándo son las matrículas?
+      - Fecha de matrícula por favor
+      - ¿Cuándo abren matrículas para el próximo semestre?
+      - ¿Hasta cuándo hay plazo para matricularme?
+      - Fechas de matrícula extemporánea
+      - ¿Cuándo es la matrícula ordinaria?
+      - cuando son las matriculas
+      - ¿Ya empezaron las matrículas?
+      - Periodo de matrícula 2027-I
+      - ¿Me puedo matricular tarde?
+      - ¿Qué día se cierra la matrícula?
+      - Plazo de matrículas
+    respuestas:
+      - Las fechas de matrícula (ordinaria y extemporánea) se fijan cada semestre en el calendario académico aprobado por el Consejo Académico. Consúltalas en el portal institucional https://www.uptc.edu.co. Te recomiendo matricularte dentro del periodo ordinario para evitar recargos.
+      - Cada semestre Registro y Control Académico publica el periodo de matrícula según el calendario académico vigente. Puedes verlo en https://www.uptc.edu.co.
+
+  - nombre: pasos_matricula
+    categoria: académico
+    descripcion: Cómo realizar la matrícula financiera y académica.
+    dependencia: registro
+    ejemplos:
+      - ¿Cómo hago la matrícula?
+      - ¿Dónde descargo el recibo de pago?
+      - Necesito el PIN para matricularme
+      - Pasos para matricularme
+      - ¿Cómo pago la matrícula?
+      - No me aparece el recibo de liquidación
+      - ¿Qué es la matrícula financiera?
+      - ya pagué, ¿ahora qué hago para matricularme?
+      - ¿Dónde inscribo las materias?
+      - Matrícula académica paso a paso
+      - recibo de matricula
+      - ¿Cómo me matriculo?
+    respuestas:
+      - "La matrícula tiene dos partes: 1) matrícula financiera: descarga tu recibo de liquidación, págalo en los canales autorizados y espera su confirmación; 2) matrícula académica: inscribe tus asignaturas en la plataforma académica dentro de las fechas del calendario. Si tu recibo no aparece, escribe a Registro y Control Académico."
+
+  - nombre: costo_matricula
+    categoria: administrativo
+    descripcion: Valor de la matrícula y cómo se liquida.
+    dependencia: registro
+    ejemplos:
+      - ¿Cuánto vale la matrícula?
+      - ¿Cuánto cuesta el semestre?
+      - Valor de la matrícula
+      - ¿Por qué mi recibo salió tan caro?
+      - ¿Cómo calculan lo que pago de matrícula?
+      - precio del semestre en la uptc
+      - ¿La matrícula depende del estrato?
+      - ¿Cuánto me toca pagar?
+      - Costo de la matrícula para primer semestre
+      - ¿Es cara la UPTC?
+    respuestas:
+      - El valor de la matrícula no es igual para todos los estudiantes; se liquida según la normativa de la universidad y aparece en tu recibo de liquidación. Si crees que tu recibo tiene un error, solicita la revisión ante Registro y Control Académico antes de la fecha límite de pago.
+
+  - nombre: descuentos_matricula
+    categoria: administrativo
+    descripcion: Descuentos, exenciones y apoyos sobre el valor de la matrícula.
+    dependencia: bienestar
+    ejemplos:
+      - ¿Hay descuentos en la matrícula?
+      - ¿Cómo aplico a matrícula cero?
+      - Descuento por votación
+      - ¿Dan descuento por buen promedio?
+      - Exención de pago de matrícula
+      - ¿Puedo pagar la matrícula por cuotas?
+      - Quiero un descuento en el recibo
+      - ¿Qué apoyos hay para pagar el semestre?
+      - descuento por certificado electoral
+      - ¿Hay financiación para la matrícula?
+    respuestas:
+      - Existen descuentos y apoyos que dependen de la normativa vigente y de cada convocatoria (por ejemplo, por certificado electoral o programas de gratuidad del Estado). Revisa las condiciones vigentes en el portal y consulta con Bienestar Universitario o con Registro y Control Académico cuál aplica a tu caso.
+
+  - nombre: adicion_asignaturas
+    categoria: académico
+    descripcion: Adición o cambio de asignaturas y grupos después de la matrícula.
+    dependencia: registro
+    ejemplos:
+      - ¿Cómo agrego una materia?
+      - Quiero adicionar una asignatura
+      - ¿Puedo cambiarme de grupo?
+      - No alcancé cupo en una materia
+      - Adición de créditos
+      - ¿Cuándo es el periodo de adiciones?
+      - Me falta inscribir una materia
+      - quiero meter otra materia
+      - Cambio de horario de una asignatura
+      - ¿Cuántos créditos puedo inscribir?
+    respuestas:
+      - La adición de asignaturas y los cambios de grupo se hacen en la plataforma académica durante el periodo de ajustes que fija el calendario académico, sujeto a cupos disponibles y al límite de créditos de tu plan de estudios. Si el sistema no te deja, consulta con la Escuela de tu programa.
+
+  # ---------------------------------------------------------------- calendario y académico
+  - nombre: calendario_academico
+    categoria: académico
+    descripcion: Inicio y fin de clases, vacaciones y fechas del semestre.
+    dependencia: academica
+    ejemplos:
+      - ¿Dónde veo el calendario académico?
+      - ¿Cuándo empiezan las clases?
+      - ¿Cuándo son las vacaciones?
+      - ¿Cuándo termina el semestre?
+      - Fechas de parciales
+      - ¿Cuándo son los exámenes finales?
+      - calendario del semestre
+      - ¿Qué día inician clases el otro semestre?
+      - ¿Hay semana de receso?
+      - ¿Cuándo se acaba el semestre?
+      - Fechas importantes del semestre
+      - ¿Cuándo es la semana de finales?
+    respuestas:
+      - El calendario académico vigente (inicio y fin de clases, evaluaciones, vacaciones y fechas límite) se publica por resolución del Consejo Académico en el portal institucional https://www.uptc.edu.co. Te sugiero revisarlo al inicio de cada semestre, porque las fechas cambian.
+
+  - nombre: horarios_clases
+    categoria: académico
+    descripcion: Consulta de horarios de clase y salones.
+    dependencia: academica
+    ejemplos:
+      - ¿Dónde veo mi horario?
+      - ¿En qué salón tengo clase?
+      - Horario de clases
+      - No sé dónde me toca la clase
+      - ¿Cómo consulto el salón de una materia?
+      - mi horario
+      - ¿Dónde aparece el aula de cada materia?
+      - ¿A qué hora tengo clase?
+      - No me aparece el salón en el horario
+      - Ver horario del semestre
+    respuestas:
+      - Tu horario y los salones aparecen en la plataforma académica una vez inscribes las asignaturas. Si un grupo no muestra salón, consulta con la Escuela de tu programa.
+
+  - nombre: consulta_notas
+    categoria: académico
+    descripcion: Consulta de calificaciones y promedio.
+    dependencia: registro
+    ejemplos:
+      - ¿Dónde veo mis notas?
+      - ¿Cómo consulto mis calificaciones?
+      - Quiero ver mi promedio
+      - ¿Ya subieron las notas finales?
+      - No me aparece una nota
+      - notas del semestre
+      - ¿Dónde veo el promedio acumulado?
+      - Consultar historial académico
+      - ¿Cuándo suben las notas?
+      - Una nota quedó mal registrada
+    respuestas:
+      - Tus calificaciones y tu promedio se consultan en la plataforma académica con tu usuario institucional. Si una nota no aparece o está mal registrada, primero habla con el docente de la asignatura; si no se resuelve, acude a la Escuela de tu programa.
+
+  - nombre: cancelacion_asignaturas
+    categoria: académico
+    descripcion: Cancelación de asignaturas o del semestre.
+    dependencia: registro
+    ejemplos:
+      - ¿Cómo cancelo una materia?
+      - Quiero retirar una asignatura
+      - Cancelación de semestre
+      - ¿Hasta cuándo puedo cancelar materias?
+      - Quiero cancelar el semestre completo
+      - me va mal en una materia, ¿la puedo cancelar?
+      - Retiro de asignatura
+      - ¿Cancelar una materia afecta el promedio?
+      - Plazo para cancelar asignaturas
+      - cancelar materia
+    respuestas:
+      - La cancelación de asignaturas solo se puede hacer dentro del plazo que fija el calendario académico y según el Reglamento Estudiantil. Revisa la fecha límite en el calendario vigente y haz la solicitud en la plataforma académica o ante tu Escuela.
+
+  - nombre: reintegro_aplazamiento
+    categoria: académico
+    descripcion: Reintegro, aplazamiento o reserva de cupo.
+    dependencia: registro
+    ejemplos:
+      - ¿Cómo solicito reintegro?
+      - Quiero aplazar el semestre
+      - Reserva de cupo
+      - Me retiré y quiero volver a estudiar
+      - ¿Cómo retomo la carrera?
+      - Aplazamiento de semestre
+      - quiero reintegrarme
+      - ¿Puedo congelar el semestre?
+      - Estuve por fuera un año, ¿cómo vuelvo?
+      - Solicitud de reintegro
+    respuestas:
+      - Las solicitudes de reintegro y de aplazamiento se tramitan ante Registro y Control Académico dentro de las fechas del calendario académico, según las condiciones del Reglamento Estudiantil.
+
+  - nombre: homologacion
+    categoria: académico
+    descripcion: Homologación o validación de asignaturas cursadas en otra institución o programa.
+    dependencia: registro
+    ejemplos:
+      - Homologación de materias de otra universidad
+      - ¿Cómo homologo asignaturas?
+      - Quiero validar una materia
+      - Vengo del SENA, ¿me homologan algo?
+      - Reconocimiento de créditos
+      - ¿Me pueden homologar materias que ya vi?
+      - homologar materias
+      - ¿Qué es un examen de validación?
+      - Equivalencia de asignaturas
+      - ¿Cuántas materias puedo homologar?
+    respuestas:
+      - La homologación y la validación de asignaturas se solicitan ante la Escuela o el Comité de Currículo de tu programa, que estudia los contenidos y créditos cursados. Prepara los certificados de notas y los contenidos programáticos de las materias, y revisa las condiciones en el Reglamento Estudiantil.
+
+  - nombre: doble_programa
+    categoria: académico
+    descripcion: Cursar dos programas académicos al mismo tiempo.
+    dependencia: registro
+    ejemplos:
+      - ¿Puedo hacer doble programa?
+      - Quiero estudiar dos carreras
+      - Doble titulación
+      - ¿Se puede ver dos programas a la vez?
+      - Requisitos para doble programa
+      - estudiar dos carreras al tiempo en la uptc
+      - ¿Cómo aplico a un segundo programa?
+      - Simultaneidad de programas
+    respuestas:
+      - La posibilidad de cursar un segundo programa depende del Reglamento Estudiantil y de los requisitos académicos (por ejemplo, el promedio). Consulta las condiciones vigentes con Registro y Control Académico o con la Escuela del programa al que quieres ingresar.
+
+  - nombre: requisitos_grado
+    categoria: académico
+    descripcion: Requisitos y trámite de grado.
+    dependencia: registro
+    ejemplos:
+      - ¿Qué necesito para graduarme?
+      - Requisitos de grado
+      - ¿Cuándo son las ceremonias de grado?
+      - Trámite para el grado
+      - Paz y salvo para graduarme
+      - ¿Cómo solicito el grado?
+      - fechas de grado
+      - ¿Qué documentos piden para el grado?
+      - Ya terminé materias, ¿cómo me gradúo?
+      - Inscripción a grados
+    respuestas:
+      - Para graduarte debes haber cumplido el plan de estudios y los requisitos de tu programa (trabajo de grado, suficiencia en idioma si aplica y paz y salvos), y hacer la solicitud dentro de las fechas de grado del calendario académico. Revisa el procedimiento vigente con Registro y Control Académico.
+
+  - nombre: suficiencia_idioma
+    categoria: académico
+    descripcion: Requisito de segunda lengua o suficiencia en inglés.
+    dependencia: academica
+    ejemplos:
+      - ¿Piden inglés para graduarse?
+      - Requisito de segunda lengua
+      - Examen de suficiencia en inglés
+      - ¿Cómo certifico el inglés?
+      - ¿Sirve el TOEFL para el requisito?
+      - suficiencia de ingles
+      - ¿Hay cursos de inglés en la universidad?
+      - ¿Qué nivel de inglés exigen?
+    respuestas:
+      - El requisito de segunda lengua depende de tu programa y de la normativa vigente. Consulta con la Escuela de tu programa qué nivel se exige y qué formas de acreditarlo se aceptan (cursos institucionales, exámenes de suficiencia o certificados externos).
+
+  - nombre: practicas_profesionales
+    categoria: académico
+    descripcion: Prácticas, pasantías y opciones de trabajo de grado.
+    dependencia: academica
+    ejemplos:
+      - ¿Cómo hago las prácticas?
+      - Información sobre pasantías
+      - ¿Cuándo puedo hacer la práctica profesional?
+      - Opciones de grado
+      - ¿La pasantía cuenta como trabajo de grado?
+      - Busco empresa para las prácticas
+      - practicas profesionales
+      - ¿Qué modalidades de trabajo de grado hay?
+    respuestas:
+      - Las prácticas, pasantías y modalidades de trabajo de grado las reglamenta cada programa. Habla con el coordinador de prácticas o con el comité de tu Escuela para conocer requisitos, convenios con empresas y fechas de inscripción.
+
+  - nombre: orientacion_primer_semestre
+    categoria: académico
+    descripcion: Orientación general para estudiantes nuevos.
+    dependencia: academica
+    ejemplos:
+      - Soy nuevo, ¿por dónde empiezo?
+      - Información para primer semestre
+      - ¿Cuándo es la inducción?
+      - Soy primíparo y estoy perdido
+      - ¿Qué tengo que hacer al entrar a la universidad?
+      - Recién admitido, ¿qué sigue?
+      - Guía para estudiantes nuevos
+      - no sé nada de la universidad, soy nueva
+      - Jornada de inducción
+      - Primeros pasos en la UPTC
+    respuestas:
+      - "¡Bienvenido a la UPTC! Para empezar: 1) completa tu matrícula financiera y académica, 2) activa tu correo institucional, 3) consulta tu horario en la plataforma académica y 4) revisa el calendario académico. Atento también a la jornada de inducción que programa la universidad. Pregúntame por cualquiera de estos pasos."
+
+  # ---------------------------------------------------------------- trámites
+  - nombre: carnet_estudiantil
+    categoria: administrativo
+    descripcion: Solicitud o duplicado del carné estudiantil.
+    dependencia: registro
+    ejemplos:
+      - ¿Cómo saco el carnet?
+      - Necesito el plástico ese de estudiante
+      - Perdí el carné, ¿cómo pido un duplicado?
+      - ¿Dónde reclamo el carnet estudiantil?
+      - Se me perdió el carnet
+      - ¿Cuándo entregan los carnés?
+      - carnet de la universidad
+      - Foto para el carné
+      - Duplicado de carné estudiantil
+      - ¿El carnet tiene costo?
+    respuestas:
+      - El carné estudiantil se tramita después de estar matriculado. Revisa en el portal institucional las indicaciones vigentes para la foto y la entrega. Si lo perdiste, puedes solicitar un duplicado ante Registro y Control Académico.
+
+  - nombre: certificado_estudio
+    categoria: administrativo
+    descripcion: Certificados y constancias de estudio o de notas.
+    dependencia: registro
+    ejemplos:
+      - ¿Cómo pido un certificado de estudio?
+      - Necesito una constancia de que estudio
+      - Certificado de notas
+      - Constancia de matrícula
+      - ¿Cuánto se demora un certificado?
+      - Necesito un certificado para el trabajo
+      - certificado de estudios
+      - ¿Dónde solicito una constancia?
+      - Certificado de calificaciones para una beca
+      - Pedir certificado
+    respuestas:
+      - Los certificados y constancias (de estudio o de calificaciones) se solicitan ante Registro y Control Académico. Por lo general debes hacer la solicitud, pagar el derecho correspondiente y esperar el tiempo de expedición indicado en el portal.
+
+  - nombre: pqrs
+    categoria: administrativo
+    descripcion: Peticiones, quejas, reclamos y sugerencias.
+    dependencia: general
+    ejemplos:
+      - Quiero poner una queja
+      - ¿Dónde radico un PQRS?
+      - Tengo un reclamo
+      - Quiero hacer una sugerencia
+      - Derecho de petición
+      - ¿Cómo presento una queja contra una dependencia?
+      - pqr
+      - Quiero reclamar por un mal servicio
+      - Necesito radicar una petición
+    respuestas:
+      - Las peticiones, quejas, reclamos y sugerencias (PQRS) se radican a través de Atención al Ciudadano en el portal institucional. Describe tu caso con el mayor detalle posible y guarda el número de radicado para hacerle seguimiento.
+
+  - nombre: horario_atencion
+    categoria: administrativo
+    descripcion: Horarios de atención y contacto de las dependencias.
+    dependencia: general
+    ejemplos:
+      - ¿A qué hora atienden?
+      - Horario de atención de Registro
+      - ¿Cuál es el teléfono de admisiones?
+      - ¿Atienden los sábados?
+      - Contacto de las oficinas
+      - ¿Cómo me comunico con la universidad?
+      - horario de oficina
+      - ¿Hasta qué hora abren las oficinas?
+      - Correo de contacto de la universidad
+    respuestas:
+      - Las dependencias atienden de lunes a viernes en horario de oficina. Los correos y canales de contacto de cada oficina están publicados en el portal institucional; también puedes comunicarte con Atención al Ciudadano. Recuerda que yo estoy disponible las 24 horas para las dudas frecuentes.
+
+  - nombre: sedes_ubicacion
+    categoria: administrativo
+    descripcion: Sedes y seccionales de la universidad.
+    dependencia: general
+    ejemplos:
+      - ¿Qué sedes tiene la UPTC?
+      - ¿Dónde queda la sede de Sogamoso?
+      - Dirección de la universidad
+      - ¿La UPTC tiene sede en Duitama?
+      - Ubicación de las seccionales
+      - ¿Dónde queda la sede central?
+      - sedes de la uptc
+      - ¿En qué ciudades está la UPTC?
+    respuestas:
+      - La UPTC tiene su sede central en Tunja y seccionales en Duitama, Sogamoso y Chiquinquirá, además de otros puntos de presencia. Las direcciones y los mapas de cada sede están en el portal institucional https://www.uptc.edu.co.
+
+  # ---------------------------------------------------------------- tecnología
+  - nombre: correo_institucional_activar
+    categoria: técnico
+    descripcion: Activación del correo institucional @uptc.edu.co.
+    dependencia: tecnologia
+    ejemplos:
+      - ¿Cómo activo mi correo institucional?
+      - No tengo correo de la universidad
+      - Crear cuenta de email UPTC
+      - ¿Cuándo me dan el correo @uptc.edu.co?
+      - Activar correo institucional
+      - no me ha llegado el correo de la universidad
+      - ¿Cuál es mi correo institucional?
+      - ¿Cómo entro al correo de la UPTC?
+      - Necesito mi cuenta institucional
+      - Primer ingreso al correo institucional
+    respuestas:
+      - Tu correo institucional (@uptc.edu.co) se asigna después de la matrícula. Para activarlo sigue las instrucciones que publica la DTIC en su línea de atención https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/09_linea_aten.html. Si pasaron varios días y no lo tienes, repórtalo allí mismo.
+
+  - nombre: correo_recuperar_contrasena
+    categoria: técnico
+    descripcion: Recuperación de contraseña del correo o de las plataformas.
+    dependencia: tecnologia
+    ejemplos:
+      - Olvidé la contraseña del correo
+      - Mi cuenta está bloqueada
+      - Recuperar clave
+      - No me acuerdo de la contraseña
+      - Restablecer contraseña institucional
+      - me bloquearon la cuenta
+      - ¿Cómo cambio mi contraseña?
+      - Perdí la clave del correo
+      - olvide mi clave
+      - Contraseña incorrecta y no puedo entrar al correo
+    respuestas:
+      - Para recuperar tu contraseña usa la opción «¿Olvidaste tu contraseña?» de la plataforma y sigue los pasos con tu correo de recuperación. Si la cuenta sigue bloqueada, solicita el restablecimiento a la Línea de Atención de la DTIC https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/09_linea_aten.html
+
+  - nombre: acceso_plataformas
+    categoria: técnico
+    descripcion: Problemas para ingresar a las plataformas académicas o virtuales.
+    dependencia: tecnologia
+    ejemplos:
+      - No puedo entrar a la plataforma
+      - El aula virtual no me funciona
+      - Me sale error al ingresar
+      - La plataforma académica no carga
+      - No puedo ingresar al aula virtual
+      - error en la plataforma
+      - Moodle no me deja entrar
+      - La página de la universidad está caída
+      - No me abre el sistema de notas
+      - Problema técnico con la plataforma
+    respuestas:
+      - "Si no puedes ingresar a una plataforma: 1) verifica que uses tu usuario institucional, 2) prueba en otro navegador o en una ventana privada, 3) intenta recuperar la contraseña. Si el error continúa, repórtalo con una captura a la Línea de Atención de la DTIC https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/09_linea_aten.html"
+
+  - nombre: red_wifi
+    categoria: técnico
+    descripcion: Conexión a la red inalámbrica de la universidad.
+    dependencia: tecnologia
+    ejemplos:
+      - ¿Cómo me conecto al wifi?
+      - ¿Cuál es la clave del internet de la universidad?
+      - No me conecta la red inalámbrica
+      - wifi de la uptc
+      - El internet de la biblioteca no sirve
+      - ¿Hay wifi para estudiantes?
+      - Conectarme a la red de la universidad
+      - no tengo internet en el campus
+    respuestas:
+      - La red inalámbrica de la universidad se usa con tus credenciales institucionales. Si no logras conectarte, olvida la red en tu dispositivo y vuelve a intentarlo; si el problema sigue, repórtalo a la Línea de Atención de la DTIC indicando la sede y el lugar.
+
+  # ---------------------------------------------------------------- servicios
+  - nombre: bienestar_universitario
+    categoria: administrativo
+    descripcion: Servicios de Bienestar Universitario (salud, psicología, deporte, apoyos).
+    dependencia: bienestar
+    ejemplos:
+      - ¿Hay servicio de psicología?
+      - Información del restaurante estudiantil
+      - ¿Qué apoyos da Bienestar?
+      - ¿Hay becas para estudiantes?
+      - Quiero inscribirme a un deporte
+      - ¿Dónde está el servicio médico?
+      - Subsidio de alimentación
+      - bienestar universitario
+      - Necesito hablar con un psicólogo
+      - ¿Hay grupos culturales?
+      - Apoyo socioeconómico
+    respuestas:
+      - Bienestar Universitario ofrece servicios de salud, acompañamiento psicológico, deporte, cultura y programas de apoyo socioeconómico. Consulta las convocatorias y horarios vigentes en el portal o directamente en la oficina de Bienestar Universitario de tu sede.
+
+  - nombre: biblioteca
+    categoria: académico
+    descripcion: Servicios de biblioteca y bases de datos.
+    dependencia: academica
+    ejemplos:
+      - ¿Cuál es el horario de la biblioteca?
+      - ¿Cómo pido un libro prestado?
+      - Acceso a bases de datos
+      - ¿Puedo renovar un préstamo?
+      - Biblioteca virtual
+      - ¿Hasta qué hora abre la biblioteca?
+      - préstamo de libros
+      - ¿Cómo entro a las bases de datos desde la casa?
+      - Multa por entregar tarde un libro
+    respuestas:
+      - La biblioteca presta servicios de préstamo, consulta en sala y acceso a bases de datos académicas con tu cuenta institucional. Revisa horarios y servicios en el portal de la UPTC.

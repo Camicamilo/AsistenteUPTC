@@ -1,0 +1,64 @@
+# Asistente Virtual UPTC — despliegue completo con un solo comando:
+#     docker compose up -d --build
+# Abre http://localhost (chat) y http://localhost/admin (panel).
+# Copia .env.example como .env para cambiar contraseñas y secretos.
+name: asistente-uptc
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: asistente
+      POSTGRES_USER: ${DB_USUARIO:-asistente}
+      POSTGRES_PASSWORD: ${DB_CLAVE:-asistente}
+    volumes:
+      - datos-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d asistente"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pln:
+    build: ./pln
+    restart: unless-stopped
+    environment:
+      PLN_TOKEN: ${PLN_TOKEN:-}
+    volumes:
+      - modelos-pln:/app/modelos
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/asistente
+      DB_USUARIO: ${DB_USUARIO:-asistente}
+      DB_CLAVE: ${DB_CLAVE:-asistente}
+      PLN_URL: http://pln:5005
+      PLN_TOKEN: ${PLN_TOKEN:-}
+      JWT_SECRETO: ${JWT_SECRETO:-cambia-este-secreto-en-produccion-uptc-2026}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost}
+      CORREO_HABILITADO: ${CORREO_HABILITADO:-false}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PUERTO: ${SMTP_PUERTO:-587}
+      SMTP_USUARIO: ${SMTP_USUARIO:-}
+      SMTP_CLAVE: ${SMTP_CLAVE:-}
+      CORREO_DESTINO_ESCALAMIENTO: ${CORREO_DESTINO_ESCALAMIENTO:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      pln:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${PUERTO_WEB:-80}:80"
+    depends_on:
+      - backend
+
+volumes:
+  datos-postgres:
+  modelos-pln:
