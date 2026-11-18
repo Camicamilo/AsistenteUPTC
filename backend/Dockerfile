@@ -16,5 +16,5 @@ EXPOSE 8080
 # MaxRAMPercentage: aprovecha la memoria del contenedor (planes gratuitos de 512 MB)
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -Duser.timezone=UTC"
 HEALTHCHECK --interval=15s --timeout=3s --start-period=60s --retries=5 \
-  CMD wget -qO- http://localhost:${PORT:-8080}/actuator/health || exit 1
+  CMD wget -qO- http://127.0.0.1:${PORT:-8080}/actuator/health || exit 1
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
