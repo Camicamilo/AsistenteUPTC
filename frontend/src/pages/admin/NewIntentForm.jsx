@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import { adminService } from '../../services/adminService.js';
-import { CATEGORIAS, LISTA_DEPENDENCIAS } from './constantes.js';
+import { useDependencias } from '../../hooks/useDependencias.js';
+import { CATEGORIAS } from './constantes.js';
 
 // Formulario para crear una intención con su primera respuesta (UC-12).
 export default function NewIntentForm({ onCreada }) {
   const { manejarError } = useAuth();
+  const dependencias = useDependencias();
   const [form, setForm] = useState({
     nombre: '',
     categoria: CATEGORIAS[0],
@@ -66,7 +68,7 @@ export default function NewIntentForm({ onCreada }) {
         <div className="field">
           <label htmlFor="ni-dep">Dependencia (si se escala)</label>
           <select id="ni-dep" className="select" value={form.dependencia} onChange={set('dependencia')}>
-            {LISTA_DEPENDENCIAS.map((d) => (
+            {dependencias.map((d) => (
               <option key={d.clave} value={d.clave}>
                 {d.nombre}
               </option>
@@ -79,15 +81,23 @@ export default function NewIntentForm({ onCreada }) {
         <input id="ni-desc" className="input" value={form.descripcion} onChange={set('descripcion')} />
       </div>
       <div className="field">
-        <label htmlFor="ni-ej">Preguntas de ejemplo (una por línea)</label>
+        <label htmlFor="ni-ej">Preguntas de ejemplo (una por línea) *</label>
         <textarea
           id="ni-ej"
           className="textarea"
-          placeholder={'¿Cómo pido un paz y salvo?\nNecesito el paz y salvo de biblioteca'}
+          placeholder={'¿Cómo pido un paz y salvo?\nNecesito el paz y salvo de biblioteca\n¿Dónde saco el paz y salvo?'}
           value={form.ejemplos}
           onChange={set('ejemplos')}
+          aria-invalid={!!err('ejemplos')}
         />
-        <span className="field-hint">Sirven para entrenar al motor PLN con formas distintas de preguntar lo mismo.</span>
+        {err('ejemplos') ? (
+          <span className="field-error">{err('ejemplos')}</span>
+        ) : (
+          <span className="field-hint">
+            Mínimo 3. Entrenan al motor PLN con formas distintas de preguntar lo mismo; al guardar, el modelo se
+            reentrena solo.
+          </span>
+        )}
       </div>
       <div className="field">
         <label htmlFor="ni-resp">Respuesta oficial *</label>

@@ -20,8 +20,14 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+      - name: Descargar dependencias (con reintentos si Maven Central limita)
+        run: |
+          for i in 1 2 3 4; do
+            mvn -B -q -Daether.connector.http.retryHandler.count=5 dependency:go-offline && break
+            echo "Reintento $i en 30 s"; sleep 30
+          done
       - name: Compilar, probar y medir cobertura
-        run: mvn -B verify
+        run: mvn -B -Daether.connector.http.retryHandler.count=5 verify
       - name: Reporte de cobertura (JaCoCo)
         if: always()
         uses: actions/upload-artifact@v4

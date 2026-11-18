@@ -77,7 +77,14 @@ export const mockAdmin = {
     auditar(u, 'Inicio de sesión', 'Acceso al panel administrativo');
     guardarDb();
     const exp = Math.floor(Date.now() / 1000) + REGLAS.JWT_HORAS * 3600;
-    const token = crearTokenDemo({ sub: u.id, correo: u.correo, nombre: u.nombre, rol: u.rol, exp });
+    const token = crearTokenDemo({
+      sub: u.id,
+      correo: u.correo,
+      nombre: u.nombre,
+      rol: u.rol,
+      debeCambiarPassword: !!u.debeCambiarPassword,
+      exp,
+    });
     return { token, usuario: publico(u) };
   },
 
@@ -201,7 +208,13 @@ export const mockAdmin = {
       throw new ServiceError('CONFLICTO', 'Ya existe una intención con ese nombre', { campo: 'nombre' });
     if (!categoria) throw new ServiceError('VALIDACION', 'Selecciona una categoría', { campo: 'categoria' });
     const texto = validarTextoRespuesta(respuesta);
-    const ejemplosLista = (ejemplos || []).map((e) => e.trim()).filter(Boolean);
+    const ejemplosLista = [...new Set((ejemplos || []).map((e) => e.trim()).filter(Boolean))];
+    if (ejemplosLista.length < 3)
+      throw new ServiceError(
+        'VALIDACION',
+        'Escribe al menos 3 frases de ejemplo (una por línea) para entrenar al asistente',
+        { campo: 'ejemplos' },
+      );
     // En modo demo, las palabras de los ejemplos alimentan el clasificador simulado.
     const claves = {};
     ejemplosLista
@@ -276,3 +289,244 @@ export const mockAdmin = {
     return JSON.parse(JSON.stringify(it));
   },
 };
+
+// ---------------------------------------------------------------------------
+// Funciones del panel completo (historial, usuarios, configuración, auditoría)
+// equivalentes a la API real, para que el modo demostración siga funcionando.
+// ---------------------------------------------------------------------------
+const ROLES = ['superadministrador', 'administrador'];
+
+function exigirSuper() {
+  const u = usuarioActual();
+  if (u.rol !== 'superadministrador')
+    throw new ServiceError('PROHIBIDO', 'Esta acción solo la puede hacer un superadministrador');
+  return u;
+}
+
+function contrasenaTemporal() {
+  const letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
+  let s = '';
+  for (let i = 0; i < 8; i += 1) s += letras[Math.floor(Math.random() * letras.length)];
+  return `${s}${Math.floor(10 + Math.random() * 89)}*`;
+}
+
+function consultasDelRango(rango) {
+  const dias = rango === 'hoy' ? 1 : rango === '30d' ? 30 : rango === '90d' ? 90 : 7;
+  const desde = inicioDelDia(Date.now()) - (dias - 1) * DIA;
+  return getDb()
+    .consultas.filter((c) => Date.parse(c.fechaHora) >= desde)
+    .slice()
+    .sort((a, b) => b.fechaHora.localeCompare(a.fechaHora));
+}
+
+function celdaCsv(v) {
+  if (v == null) return '';
+  let t = String(v).replace(/[\r\n]+/g, ' ');
+  if (/^[=+\-@]/.test(t)) t = `'${t}`;
+  return `"${t.replace(/"/g, '""')}"`;
+}
+
+Object.assign(mockAdmin, {
+  async historial({ rango = '7d', estado = '', q = '', page = 1, pageSize = 15 } = {}) {
+    usuarioActual();
+    await esperar(150, 350);
+    const term = q.trim().toLowerCase();
+    const lista = consultasDelRango(rango)
+      .filter((c) => !estado || (estado === 'resuelta') === c.resuelta)
+      .filter((c) => !term || c.texto.toLowerCase().includes(term) || (c.intent || '').includes(term));
+    return paginar(lista, page, pageSize);
+  },
+
+  async exportarCsv(rango = '30d') {
+    usuarioActual();
+    const filas = consultasDelRango(rango).map((c) =>
+      [
+        c.fechaHora.replace('T', ' ').slice(0, 19),
+        celdaCsv(c.sesionId),
+        celdaCsv(c.canal),
+        celdaCsv(c.texto),
+        celdaCsv(c.intent),
+        celdaCsv(c.categoria),
+        c.confianza == null ? '' : c.confianza.toFixed(2),
+        c.resuelta ? 'resuelta' : 'escalada',
+        celdaCsv(c.motivoEscalamiento),
+        c.tiempoMs,
+      ].join(';'),
+    );
+    const csv = ['fecha_hora;sesion;canal;consulta;intencion;categoria;confianza;estado;motivo_escalamiento;tiempo_ms', ...filas].join('\n');
+    return new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  },
+
+  async historialIntencion(id) {
+    usuarioActual();
+    const it = getDb().intenciones.find((x) => x.id === Number(id));
+    if (!it) throw new ServiceError('VALIDACION', 'La intención no existe');
+    const tipos = {
+      'Crear intención': 'IntencionCreada',
+      'Editar intención': 'IntencionEditada',
+      'Agregar respuesta': 'RespuestaCreada',
+      'Editar respuesta': 'RespuestaEditada',
+      'Activar respuesta': 'RespuestaActivada',
+      'Desactivar respuesta': 'RespuestaDesactivada',
+    };
+    return getDb()
+      .auditoria.filter((a) => tipos[a.accion] && a.detalle.split(' ')[0] === it.nombre)
+      .slice()
+      .reverse()
+      .map((a, i) => ({ id: a.id, version: i + 1, tipoEvento: tipos[a.accion], datos: { detalle: a.detalle }, fechaHora: a.fecha, usuarioId: a.usuario }));
+  },
+
+  async dependencias() {
+    return Object.values(getDb().configuracion.dependencias);
+  },
+
+  async cambiarContrasena(actual, nueva) {
+    const u = usuarioActual();
+    await esperar(200, 400);
+    if (u.password !== actual) throw new ServiceError('VALIDACION', 'La contraseña actual no es correcta', { campo: 'actual' });
+    if (!nueva || nueva.length < 8 || !/[A-Za-z]/.test(nueva) || !/\d/.test(nueva))
+      throw new ServiceError('VALIDACION', 'La contraseña debe tener mínimo 8 caracteres, letras y números', { campo: 'nueva' });
+    u.password = nueva;
+    u.debeCambiarPassword = false;
+    auditar(u, 'Cambiar contraseña', 'Cambio de contraseña propia');
+    guardarDb();
+    return null;
+  },
+
+  async listarUsuarios() {
+    exigirSuper();
+    await esperar(150, 300);
+    return getDb().usuarios.map(publico).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  },
+
+  async crearUsuario({ nombre, correo, rol }) {
+    const actor = exigirSuper();
+    await esperar(250, 500);
+    const db = getDb();
+    const c = String(correo || '').trim().toLowerCase();
+    if (!/^[a-z0-9._%+-]+@uptc\.edu\.co$/.test(c))
+      throw new ServiceError('VALIDACION', 'Solo se permiten correos institucionales @uptc.edu.co', { campo: 'correo' });
+    if (String(nombre || '').trim().length < 3)
+      throw new ServiceError('VALIDACION', 'El nombre debe tener entre 3 y 120 caracteres', { campo: 'nombre' });
+    if (!ROLES.includes(rol)) throw new ServiceError('VALIDACION', 'Rol no válido', { campo: 'rol' });
+    if (db.usuarios.some((u) => u.correo === c))
+      throw new ServiceError('CONFLICTO', 'Ya existe un usuario con ese correo', { campo: 'correo' });
+    const temporal = contrasenaTemporal();
+    const nuevo = {
+      id: siguienteId(db.usuarios),
+      nombre: nombre.trim(),
+      correo: c,
+      password: temporal,
+      rol,
+      activo: true,
+      debeCambiarPassword: true,
+      fechaRegistro: new Date().toISOString(),
+      ultimoAcceso: null,
+    };
+    db.usuarios.push(nuevo);
+    auditar(actor, 'Crear usuario', `${c} (${rol})`);
+    guardarDb();
+    return { usuario: publico(nuevo), contrasenaTemporal: temporal };
+  },
+
+  async actualizarUsuario(id, { nombre, rol, activo }) {
+    const actor = exigirSuper();
+    await esperar(200, 400);
+    const u = getDb().usuarios.find((x) => x.id === Number(id));
+    if (!u) throw new ServiceError('VALIDACION', 'El usuario no existe');
+    if (u.id === actor.id && activo === false)
+      throw new ServiceError('VALIDACION', 'No puedes desactivar tu propia cuenta', { campo: 'activo' });
+    if (u.id === actor.id && rol && rol !== 'superadministrador')
+      throw new ServiceError('VALIDACION', 'No puedes quitarte el rol de superadministrador', { campo: 'rol' });
+    if (nombre !== undefined) u.nombre = String(nombre).trim();
+    if (rol) u.rol = rol;
+    if (activo !== undefined) u.activo = !!activo;
+    auditar(actor, activo === false ? 'Desactivar usuario' : activo === true ? 'Activar usuario' : 'Editar usuario', u.correo);
+    guardarDb();
+    return publico(u);
+  },
+
+  async restablecerContrasena(id) {
+    const actor = exigirSuper();
+    await esperar(200, 400);
+    const u = getDb().usuarios.find((x) => x.id === Number(id));
+    if (!u) throw new ServiceError('VALIDACION', 'El usuario no existe');
+    u.password = contrasenaTemporal();
+    u.debeCambiarPassword = true;
+    auditar(actor, 'Restablecer contraseña', u.correo);
+    guardarDb();
+    return { contrasenaTemporal: u.password };
+  },
+
+  async configuracion() {
+    usuarioActual();
+    const { umbralConfianza, inactividadSesionMin, plantillaEscalamiento, notificarPorCorreo } = getDb().configuracion;
+    return { umbralConfianza, inactividadSesionMin, plantillaEscalamiento, notificarPorCorreo };
+  },
+
+  async guardarConfiguracion(datos) {
+    const actor = exigirSuper();
+    await esperar(200, 400);
+    const cfg = getDb().configuracion;
+    const umbral = datos.umbralConfianza ?? cfg.umbralConfianza;
+    const inactividad = datos.inactividadSesionMin ?? cfg.inactividadSesionMin;
+    const plantilla = (datos.plantillaEscalamiento ?? cfg.plantillaEscalamiento).trim();
+    if (!(umbral >= REGLAS.UMBRAL_MIN && umbral <= REGLAS.UMBRAL_MAX))
+      throw new ServiceError('VALIDACION', 'El umbral de confianza debe estar entre 50 % y 80 %', { campo: 'umbralConfianza' });
+    if (!(inactividad >= 5 && inactividad <= 240))
+      throw new ServiceError('VALIDACION', 'La inactividad debe estar entre 5 y 240 minutos', { campo: 'inactividadSesionMin' });
+    if (!plantilla.includes('{dependencia}') || plantilla.length > 500)
+      throw new ServiceError('VALIDACION', 'La plantilla debe incluir {dependencia} y tener máximo 500 caracteres', {
+        campo: 'plantillaEscalamiento',
+      });
+    Object.assign(cfg, {
+      umbralConfianza: umbral,
+      inactividadSesionMin: inactividad,
+      plantillaEscalamiento: plantilla,
+      notificarPorCorreo: datos.notificarPorCorreo ?? cfg.notificarPorCorreo,
+    });
+    auditar(actor, 'Configurar sistema', `umbral ${umbral}, inactividad ${inactividad} min`);
+    guardarDb();
+    return mockAdmin.configuracion();
+  },
+
+  async restaurarConfiguracion() {
+    return mockAdmin.guardarConfiguracion({
+      umbralConfianza: 0.6,
+      inactividadSesionMin: 30,
+      plantillaEscalamiento:
+        'No tengo información suficiente para responder esa pregunta con seguridad. Te recomiendo comunicarte con {dependencia}.',
+      notificarPorCorreo: true,
+    });
+  },
+
+  async actualizarDependencia(clave, datos) {
+    const actor = exigirSuper();
+    await esperar(200, 400);
+    const deps = getDb().configuracion.dependencias;
+    if (!deps[clave]) throw new ServiceError('VALIDACION', 'La dependencia no existe');
+    if (String(datos.nombre || '').trim().length < 3)
+      throw new ServiceError('VALIDACION', 'Escribe el nombre oficial de la dependencia (RD-04)', { campo: 'nombre' });
+    if (datos.enlace && !/^https?:\/\//.test(datos.enlace))
+      throw new ServiceError('VALIDACION', 'El enlace debe empezar por https://', { campo: 'enlace' });
+    deps[clave] = { ...deps[clave], ...datos, clave };
+    auditar(actor, 'Editar dependencia', clave);
+    guardarDb();
+    return deps[clave];
+  },
+
+  async auditoria(limite = 100) {
+    exigirSuper();
+    return getDb().auditoria.slice(0, limite);
+  },
+
+  async estadoPln() {
+    return { disponible: !getDb().configuracion.simularFalloPln, circuito: 'cerrado' };
+  },
+
+  async reentrenarPln() {
+    usuarioActual();
+    await esperar(600, 1200);
+    return { ok: true };
+  },
+});

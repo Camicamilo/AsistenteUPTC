@@ -719,3 +719,78 @@
     display: none;
   }
 }
+
+/* ---------- Páginas de historial, usuarios, configuración y cuenta ---------- */
+.page > .card + .card,
+.page > section + section {
+  margin-top: 0;
+}
+.card-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+}
+.card-title-pad {
+  padding: 18px 18px 0;
+}
+.card-narrow {
+  max-width: 520px;
+}
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #1f6f43);
+}
+.field input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent, #1f6f43);
+}
+.kv {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+.secreto {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.secreto p {
+  margin: 4px 0 8px;
+}
+.secreto-valor {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  user-select: all;
+}
+.secreto-acciones {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.timeline {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.page .filters .segmented {
+  flex-shrink: 0;
+}

@@ -8,6 +8,10 @@ import './admin.css';
 const NAV = [
   { to: '/admin', end: true, icono: 'dashboard', texto: 'Dashboard' },
   { to: '/admin/conocimiento', icono: 'book', texto: 'Base de conocimiento' },
+  { to: '/admin/historial', icono: 'history', texto: 'Historial de consultas' },
+  { to: '/admin/usuarios', icono: 'users', texto: 'Usuarios', soloSuper: true },
+  { to: '/admin/configuracion', icono: 'settings', texto: 'Configuración', soloSuper: true },
+  { to: '/admin/cuenta', icono: 'shield', texto: 'Mi cuenta' },
 ];
 
 export default function AdminLayout() {
@@ -30,7 +34,7 @@ export default function AdminLayout() {
         </Link>
 
         <nav className="adm-nav" aria-label="Secciones del panel">
-          {NAV.map((n) => (
+          {NAV.filter((n) => !n.soloSuper || usuario?.esSuper).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end} className="adm-nav-link">
               <Icon name={n.icono} size={18} />
               <span>{n.texto}</span>
@@ -68,6 +72,12 @@ export default function AdminLayout() {
         {config.useMock && (
           <p className="adm-demo">
             <Icon name="alert" size={15} /> Modo demostración: datos simulados guardados en este navegador.
+          </p>
+        )}
+        {usuario?.debeCambiarPassword && (
+          <p className="notice notice-warning">
+            <Icon name="alert" size={15} /> Estás usando una contraseña temporal.{' '}
+            <Link to="/admin/cuenta">Cámbiala ahora</Link>.
           </p>
         )}
         <Outlet />

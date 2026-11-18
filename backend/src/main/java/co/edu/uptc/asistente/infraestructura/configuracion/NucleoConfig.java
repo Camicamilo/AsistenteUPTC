@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Clock;
 import java.time.ZoneId;
-import java.util.random.RandomGenerator;
+import java.util.SplittableRandom;
 
 /**
  * Ensambla el núcleo del hexágono. Los casos de uso son clases Java simples (sin anotaciones de
@@ -53,7 +53,7 @@ public class NucleoConfig {
                                                      RepositorioConfiguracion configuracion,
                                                      PublicadorEventos eventos, Clock reloj) {
         return new ServicioConversacion(clasificador, intenciones, sesiones, consultas, configuracion, eventos,
-                new SelectorRespuesta(RandomGenerator.getDefault()), reloj);
+                new SelectorRespuesta(new SplittableRandom()), reloj);
     }
 
     @Bean

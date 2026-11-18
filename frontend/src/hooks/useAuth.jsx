@@ -9,7 +9,15 @@ const AuthContext = createContext(null);
 function usuarioDesdeToken(token) {
   if (!token || !tokenVigente(token)) return null;
   const p = decodeJwt(token);
-  return { id: p.sub, nombre: p.nombre, correo: p.correo, rol: p.rol, exp: p.exp };
+  return {
+    id: String(p.sub),
+    nombre: p.nombre,
+    correo: p.correo,
+    rol: p.rol,
+    exp: p.exp,
+    debeCambiarPassword: !!p.debeCambiarPassword,
+    esSuper: p.rol === 'superadministrador',
+  };
 }
 
 // Sesión del panel administrativo con JWT (expira a las 8 horas, Tabla 30).
@@ -19,7 +27,11 @@ export function AuthProvider({ children }) {
     return t && tokenVigente(t) ? t : null;
   });
   const [motivoSalida, setMotivoSalida] = useState(null);
-  const usuario = useMemo(() => usuarioDesdeToken(token), [token]);
+  const [contrasenaCambiada, setContrasenaCambiada] = useState(false);
+  const usuario = useMemo(() => {
+    const u = usuarioDesdeToken(token);
+    return u && contrasenaCambiada ? { ...u, debeCambiarPassword: false } : u;
+  }, [token, contrasenaCambiada]);
 
   const logout = useCallback((motivo = null) => {
     sessionStore.remove(TOKEN_KEY);
@@ -31,6 +43,7 @@ export function AuthProvider({ children }) {
     const r = await adminService.login(correo, password);
     sessionStore.set(TOKEN_KEY, r.token);
     setMotivoSalida(null);
+    setContrasenaCambiada(false);
     setToken(r.token);
     return r.usuario;
   }, []);
@@ -58,6 +71,7 @@ export function AuthProvider({ children }) {
       logout,
       manejarError,
       motivoSalida,
+      marcarContrasenaCambiada: () => setContrasenaCambiada(true),
     }),
     [usuario, login, logout, manejarError, motivoSalida],
   );

@@ -91,8 +91,17 @@ export function useChat() {
       setEscribiendo(true);
       tocar();
       try {
-        const sid = sesionRef.current ?? (await crearSesion());
-        const r = await chatService.enviarConsulta(sid, texto);
+        let sid = sesionRef.current ?? (await crearSesion());
+        let r;
+        try {
+          r = await chatService.enviarConsulta(sid, texto);
+        } catch (e) {
+          // La sesión se cerró en el servidor (p. ej. por inactividad): se abre otra y se reenvía.
+          if (e?.codigo !== 'CONFLICTO' || e?.detalles?.codigo !== 'SESION_CERRADA') throw e;
+          sesionRef.current = null;
+          sid = await crearSesion();
+          r = await chatService.enviarConsulta(sid, texto);
+        }
         agregar(
           msg('bot', {
             tipo: r.tipo === 'escalamiento' ? 'escalamiento' : 'respuesta',

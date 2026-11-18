@@ -3,7 +3,8 @@ import Icon from '../../components/Icon.jsx';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import { adminService } from '../../services/adminService.js';
 import { formatDateTime } from '../../utils/format.js';
-import { CATEGORIAS, LISTA_DEPENDENCIAS } from './constantes.js';
+import { useDependencias } from '../../hooks/useDependencias.js';
+import { CATEGORIAS } from './constantes.js';
 
 function Respuesta({ intentId, r, onGuardado }) {
   const { manejarError } = useAuth();
@@ -71,9 +72,50 @@ function Respuesta({ intentId, r, onGuardado }) {
   );
 }
 
+const EVENTOS = {
+  IntencionCreada: 'Intención creada',
+  IntencionEditada: 'Datos editados',
+  RespuestaCreada: 'Respuesta agregada',
+  RespuestaEditada: 'Respuesta editada',
+  RespuestaActivada: 'Respuesta activada',
+  RespuestaDesactivada: 'Respuesta desactivada',
+};
+
+// Historial de cambios leído del almacén de eventos (EventSourcing, pauta 8.5): solo se agregan eventos.
+function HistorialCambios({ id, version }) {
+  const [eventos, setEventos] = useState(null);
+  useEffect(() => {
+    adminService
+      .historialIntencion?.(id)
+      .then(setEventos)
+      .catch(() => setEventos([]));
+  }, [id, version]);
+  if (!eventos?.length) return null;
+  return (
+    <>
+      <h3 className="editor-h">Historial de cambios</h3>
+      <ol className="timeline">
+        {eventos
+          .slice()
+          .reverse()
+          .map((e) => (
+            <li key={e.id}>
+              <strong>{EVENTOS[e.tipoEvento] ?? e.tipoEvento}</strong>
+              <span className="cell-muted">
+                {' '}
+                · v{e.version} · {formatDateTime(e.fechaHora)}
+              </span>
+            </li>
+          ))}
+      </ol>
+    </>
+  );
+}
+
 // Detalle de una intención: datos generales, respuestas (editar / activar / desactivar) y nueva respuesta.
 export default function IntentEditor({ id, onCambio }) {
   const { manejarError } = useAuth();
+  const dependencias = useDependencias();
   const [it, setIt] = useState(null);
   const [general, setGeneral] = useState(null);
   const [nueva, setNueva] = useState('');
@@ -162,7 +204,7 @@ export default function IntentEditor({ id, onCambio }) {
             value={general.dependencia}
             onChange={(e) => setGeneral((g) => ({ ...g, dependencia: e.target.value }))}
           >
-            {LISTA_DEPENDENCIAS.map((d) => (
+            {dependencias.map((d) => (
               <option key={d.clave} value={d.clave}>
                 {d.nombre}
               </option>
@@ -211,6 +253,8 @@ export default function IntentEditor({ id, onCambio }) {
           <Icon name="plus" size={16} /> Agregar respuesta
         </button>
       </div>
+
+      <HistorialCambios id={it.id} version={JSON.stringify(it.respuestas.map((r) => r.fechaActualizacion))} />
     </div>
   );
 }

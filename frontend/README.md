@@ -5,9 +5,11 @@ Frontend del proyecto **"Implementación de un Asistente Virtual Automatizado pa
 Incluye:
 
 - **Widget de chat del estudiante** (`/`): botón flotante «¿Necesitas ayuda?», temas rápidos, contador de 500 caracteres, indicador de escritura, escalamiento a atención humana cuando la confianza es menor al 60 %, aviso sin conexión y pantalla completa en móvil.
-- **Panel administrativo** (`/admin`): inicio de sesión con JWT, dashboard de métricas y base de conocimiento (crear intenciones, editar, activar o desactivar respuestas).
+- **Panel administrativo** (`/admin`): inicio de sesión con JWT, dashboard de métricas, base de conocimiento (crear intenciones con ejemplos, editar, activar o desactivar respuestas, historial de cambios), historial de consultas con exportación a CSV, usuarios y configuración del sistema (solo superadministrador) y cambio de contraseña.
 
-Stack: **React 18 + Vite 7** (sin librerías de UI ni de gráficas).
+> Este es el frontend del proyecto. La guía general, el backend y el servicio PLN están en el [README principal](../README.md).
+
+Stack: **React 18 + Vite 7** (sin librerías de UI ni de gráficas). Pruebas con **Vitest** (`npm test`).
 
 ## Cómo ejecutarlo
 
@@ -59,6 +61,19 @@ En desarrollo Vite redirige `/api/*` al backend (ver `vite.config.js`).
 | POST | `/api/admin/intenciones` | crear intención con su primera respuesta |
 | POST | `/api/admin/intenciones/{id}/respuestas` | `{ texto }` |
 | PATCH | `/api/admin/intenciones/{id}/respuestas/{rid}` | `{ texto?, activa? }` |
+| GET | `/api/admin/intenciones/{id}/historial` | eventos de la intención (EventSourcing) |
+| GET | `/api/admin/dependencias` | dependencias y datos de contacto |
+| GET | `/api/admin/consultas?rango=&estado=&q=&page=` | historial paginado de consultas |
+| GET | `/api/admin/consultas/exportar?rango=` | CSV del historial |
+| PUT | `/api/admin/auth/contrasena` | `{ actual, nueva }` |
+| GET / POST / PATCH | `/api/admin/usuarios[/{id}]` | cuentas del panel (solo superadministrador) |
+| POST | `/api/admin/usuarios/{id}/restablecer` | → `{ contrasenaTemporal }` |
+| GET / PUT | `/api/admin/configuracion` | umbral (50–80 %), inactividad, plantilla, notificaciones |
+| PUT | `/api/admin/dependencias/{clave}` | datos de contacto de una dependencia |
+| GET | `/api/admin/auditoria?limite=` | últimas acciones del panel |
+| GET / POST | `/api/admin/pln/estado`, `/api/admin/pln/reentrenar` | estado y reentrenamiento del motor PLN |
+
+La documentación completa e interactiva está en `/swagger-ui.html` del backend.
 
 Las rutas `/api/admin/*` llevan `Authorization: Bearer <JWT>`. Un `401` cierra la sesión del panel; un `503` en el chat muestra el mensaje de servicio no disponible con el contacto de atención.
 
@@ -72,7 +87,8 @@ src/
 │   └── charts/    StatTile, ColumnChart, BarList
 ├── pages/
 │   ├── PortalDemoPage.jsx
-│   └── admin/     LoginPage, DashboardPage, KnowledgeBasePage, IntentEditor, NewIntentForm
+│   └── admin/     LoginPage, DashboardPage, KnowledgeBasePage, IntentEditor, NewIntentForm,
+│                  HistorialPage, UsuariosPage, ConfiguracionPage, CuentaPage
 ├── hooks/         useChat (sesión y conversación), useAuth (JWT), useTheme, useOnlineStatus
 ├── services/
 │   ├── chatService.js / adminService.js   eligen simulador o API real

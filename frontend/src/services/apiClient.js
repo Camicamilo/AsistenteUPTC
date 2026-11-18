@@ -51,3 +51,19 @@ export async function request(path, { method = 'GET', body, auth = false, timeou
   }
   return data;
 }
+
+// Descarga de archivos (CSV del historial). Devuelve un Blob.
+export async function descargar(path) {
+  const headers = {};
+  const token = sessionStore.get(TOKEN_KEY);
+  if (token) headers.Authorization = `Bearer ${token}`;
+  let res;
+  try {
+    res = await fetch(`${config.apiBaseUrl}${path}`, { headers });
+  } catch {
+    throw new ServiceError('RED', 'No fue posible conectar con el servidor');
+  }
+  if (res.status === 401) throw new ServiceError('NO_AUTORIZADO', 'Sesión expirada');
+  if (!res.ok) throw new ServiceError('SERVIDOR', `Error ${res.status}`);
+  return res.blob();
+}
