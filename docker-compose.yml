@@ -38,7 +38,7 @@ services:
       PLN_URL: http://pln:5005
       PLN_TOKEN: ${PLN_TOKEN:-}
       JWT_SECRETO: ${JWT_SECRETO:-cambia-este-secreto-en-produccion-uptc-2026}
-      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost,http://localhost:${PUERTO_WEB:-80}}
       CORREO_HABILITADO: ${CORREO_HABILITADO:-false}
       SMTP_HOST: ${SMTP_HOST:-localhost}
       SMTP_PUERTO: ${SMTP_PUERTO:-587}
