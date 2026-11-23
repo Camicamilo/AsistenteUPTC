@@ -1,0 +1,96 @@
+# Configuración del backend. Todo lo sensible viene de variables de entorno (ver .env.example).
+spring:
+  application:
+    name: asistente-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/asistente}
+    username: ${DB_USUARIO:asistente}
+    password: ${DB_CLAVE:asistente}
+    hikari:
+      maximum-pool-size: ${DB_POOL:10}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    default-property-inclusion: always
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PUERTO:587}
+    username: ${SMTP_USUARIO:}
+    password: ${SMTP_CLAVE:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  info:
+    env:
+      enabled: true
+  health:
+    mail:
+      enabled: false
+
+info:
+  app:
+    nombre: Asistente Virtual UPTC
+    version: 1.0.0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+asistente:
+  zona-horaria: America/Bogota
+  pln:
+    url: ${PLN_URL:http://localhost:5005}
+    token: ${PLN_TOKEN:}
+    timeout-ms: ${PLN_TIMEOUT_MS:2500}
+  jwt:
+    # En producción SIEMPRE se define JWT_SECRETO (mínimo 32 caracteres).
+    secreto: ${JWT_SECRETO:cambia-este-secreto-en-produccion-uptc-2026}
+    horas: 8
+  cors:
+    origenes: ${CORS_ORIGENES:http://localhost:5173,http://localhost}
+  correo:
+    habilitado: ${CORREO_HABILITADO:false}
+    remitente: ${CORREO_REMITENTE:asistente.virtual@uptc.edu.co}
+    # Si se define, TODOS los escalamientos llegan a este buzón (útil para el piloto).
+    destino-escalamiento: ${CORREO_DESTINO_ESCALAMIENTO:}
+    # Solo en producción validada: enviar a los correos de cada dependencia.
+    usar-correo-de-dependencia: ${CORREO_USAR_DEPENDENCIA:false}
+
+---
+# Perfil de desarrollo: base de datos H2 en archivo, sin instalar PostgreSQL.
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:file:./data/asistente;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: ""

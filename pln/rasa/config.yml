@@ -1,0 +1,20 @@
+# Configuración para usar Rasa Open Source 3.x en lugar del servicio liviano.
+# Entrenar:  rasa train nlu --nlu ../data/nlu.yml --config config.yml
+# Servir:    rasa run --enable-api -p 5005
+# El backend no cambia: RasaAdapter usa el mismo endpoint POST /model/parse.
+recipe: default.v1
+language: es
+pipeline:
+  - name: WhitespaceTokenizer
+  - name: RegexFeaturizer
+  - name: LexicalSyntacticFeaturizer
+  - name: CountVectorsFeaturizer
+  - name: CountVectorsFeaturizer
+    analyzer: char_wb
+    min_ngram: 2
+    max_ngram: 5
+  - name: DIETClassifier
+    epochs: 100
+  - name: FallbackClassifier
+    threshold: 0.3
+assistant_id: asistente-uptc

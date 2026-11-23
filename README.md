@@ -1,95 +1,129 @@
-# Asistente Virtual UPTC — Frontend
+# Asistente Virtual Automatizado UPTC
 
-Frontend del proyecto **"Implementación de un Asistente Virtual Automatizado para la Optimización del Soporte Informativo y la Gestión Administrativa en la UPTC"** (Ingeniería del Software II, 2026).
+Proyecto de **Ingeniería del Software II (2026)** — *Implementación de un Asistente Virtual Automatizado para la
+Optimización del Soporte Informativo y la Gestión Administrativa en la UPTC*.
+Adriam Camilo Macias Gavidia · Sergio Mauricio Parra Criado.
 
-Incluye:
+Chat 24/7 que responde en lenguaje natural las preguntas frecuentes de los estudiantes (admisiones,
+matrículas, calendario, correo institucional, trámites) y escala a la dependencia correcta cuando no está
+seguro, más un panel para que el personal administre las respuestas sin tocar código.
 
-- **Widget de chat del estudiante** (`/`): botón flotante «¿Necesitas ayuda?», temas rápidos, contador de 500 caracteres, indicador de escritura, escalamiento a atención humana cuando la confianza es menor al 60 %, aviso sin conexión y pantalla completa en móvil.
-- **Panel administrativo** (`/admin`): inicio de sesión con JWT, dashboard de métricas y base de conocimiento (crear intenciones, editar, activar o desactivar respuestas).
+## Arquitectura
 
-Stack: **React 18 + Vite 7** (sin librerías de UI ni de gráficas).
+```mermaid
+flowchart LR
+    E[Estudiante<br/>navegador] -->|HTTPS| N[Nginx<br/>frontend React]
+    A[Administrador<br/>panel + JWT] -->|HTTPS| N
+    N -->|/api REST/JSON| B[Backend Spring Boot<br/>hexagonal]
+    B -->|POST /model/parse| P[Servicio PLN<br/>API compatible con Rasa]
+    B -->|JPA + Flyway| D[(PostgreSQL)]
+    B -.->|SMTP/TLS| C[Correo institucional]
+```
 
-## Cómo ejecutarlo
+| Carpeta | Qué es | Tecnología |
+| --- | --- | --- |
+| [`frontend/`](frontend/) | Widget de chat del estudiante y panel administrativo | React 18 + Vite 7, Nginx |
+| [`backend/`](backend/) | API REST, reglas del negocio, seguridad, métricas | Java 17, Spring Boot 3.4, JPA, Flyway, JWT |
+| [`pln/`](pln/) | Motor de lenguaje natural: intención, confianza y entidades | Python 3.11, FastAPI, scikit-learn |
+| [`datos/`](datos/) | Base de conocimiento (fuente única de intenciones, ejemplos y respuestas) | YAML |
+| [`scripts/`](scripts/) | Generador de datos, prueba de punta a punta y prueba de carga | Python |
+| [`docs/`](docs/) | Guía de despliegue | Markdown |
 
-Requisito: **Node.js 20.19 o superior** (`node -v` para comprobarlo).
+### Backend hexagonal (puertos y adaptadores, pauta 8.7)
+
+```
+co.edu.uptc.asistente
+├── dominio            modelo (TextoConsulta, NivelConfianza, Intencion, SesionChat…), PoliticaEscalamiento, eventos
+├── aplicacion
+│   ├── puerto.entrada   ProcesarConsulta, GestionarSesiones, GestionarConocimiento, ConsultarMetricas,
+│   │                    Autenticar, GestionarUsuarios, ConfigurarSistema
+│   ├── puerto.salida    ClasificadorIntencion, RepositorioIntenciones, RepositorioSesiones, NotificadorEscalamiento…
+│   └── casodeuso        ServicioConversacion, ServicioConocimiento, ServicioMetricas…  (Java puro, sin Spring)
+└── infraestructura
+    ├── entrada          REST (ChatController, IntencionesController…), tareas programadas
+    ├── salida           RasaAdapter (+ circuit breaker), adaptadores JPA, caché CQRS, correo SMTP, eventos
+    └── seguridad        JWT (8 h), BCrypt, CORS, cabeceras
+```
+
+El núcleo (`dominio` + `aplicacion`) no importa nada de Spring: se prueba con adaptadores falsos en memoria.
+Cambiar el motor PLN (Rasa, Dialogflow o el servicio liviano) o la base de datos solo cambia un adaptador.
+
+Patrones aplicados que se pueden ver en el código: capas y hexagonal, DDD (agregados, objetos de valor,
+servicios de dominio, eventos), **EventSourcing** (tabla `eventos` de solo inserción; historial de cada
+intención), **CQRS** ligero (caché de lectura de la base de conocimiento), orientado a eventos (registro,
+correo y reentrenamiento en segundo plano), **Circuit Breaker** hacia el PLN, Repository, Strategy/Observer.
+
+## Ejecutarlo
+
+**Todo junto con Docker** (lo más fácil):
 
 ```bash
-npm install
-npm run dev
+cp .env.example .env
+docker compose up -d --build
 ```
 
-Abre <http://localhost:5173>.
+Chat en <http://localhost>, panel en <http://localhost/admin> (`admin@uptc.edu.co` / `Admin2026*`, superadministrador;
+`gestor@uptc.edu.co` / `Gestor2026*`, administrador) y API documentada en <http://localhost/swagger-ui.html>.
+Cambia esas contraseñas apenas lo despliegues. Para publicarlo gratis en internet ver
+[`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
-| Ruta | Qué hay |
+**Por partes, para desarrollar:**
+
+```bash
+# 1. Motor PLN (puerto 5005)
+cd pln && pip install -r requirements-dev.txt && uvicorn app.main:app --port 5005
+
+# 2. Backend (puerto 8080) con H2 en archivo, sin instalar PostgreSQL
+cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# 3. Frontend (puerto 5173) conectado al backend
+cd frontend && npm install && VITE_USE_MOCK=false npm run dev
+```
+
+El frontend también funciona solo, sin backend (`npm run dev` con `VITE_USE_MOCK=true`): usa un motor PLN
+simulado y guarda los datos en el navegador.
+
+## Pruebas
+
+| Comando | Qué prueba |
 | --- | --- |
-| `/` | Página de demostración con el widget de chat |
-| `/admin` | Panel administrativo |
+| `cd backend && mvn verify` | 65 pruebas: dominio y casos de uso (caja blanca, valores límite), integración de la API con H2, adaptador del PLN y JWT. Cobertura en `target/site/jacoco/index.html` |
+| `cd pln && pytest` | Normalización, entidades, clasificador y API HTTP |
+| `cd pln && python -m app.evaluar` | Exactitud del modelo en el conjunto de validación (RF-02, meta 85 %) |
+| `cd frontend && npm test` | Cliente de la API, utilidades y motor simulado (Vitest) |
+| `python scripts/prueba_e2e.py http://localhost` | Punta a punta con el sistema desplegado, incluido el reentrenamiento automático |
+| `python scripts/prueba_carga.py http://localhost 100 5` | 100 usuarios concurrentes (RNF-05) |
 
-**Usuario de demostración del panel:** `admin@uptc.edu.co` / `Admin2026*`
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) corre todo lo anterior en cada push y,
+al final, levanta el sistema con Docker Compose y ejecuta la prueba E2E y la de carga.
 
-Para generar la versión de producción: `npm run build` (queda en `dist/`).
+## Base de conocimiento
 
-## Modo demostración vs. backend real
+`datos/base_conocimiento.yml` tiene las 34 intenciones (31 temáticas y 3 sociales), 338 frases de entrenamiento
+y las respuestas. Después de editarlo:
 
-Por defecto el proyecto funciona **sin backend**: un motor PLN simulado clasifica las preguntas por palabras clave y los datos se guardan en el `localStorage` del navegador. El chat y el panel comparten esos datos: si desactivas una respuesta en el panel, el chat empieza a escalar esa consulta.
-
-Para conectarlo al backend Spring Boot, copia `.env.example` como `.env` y cambia:
-
+```bash
+pip install pyyaml bcrypt
+python scripts/generar_datos.py   # regenera pln/data/nlu.yml y la semilla SQL
 ```
-VITE_USE_MOCK=false
-VITE_BACKEND_URL=http://localhost:8080
-```
 
-En desarrollo Vite redirige `/api/*` al backend (ver `vite.config.js`).
-
-> Los textos, correos y enlaces del modo demostración son de ejemplo. Antes del piloto el enlace institucional debe reemplazarlos por los oficiales (RD-01, RD-03, RD-04).
-
-## Contrato de la API REST esperado
-
-| Método | Ruta | Cuerpo / respuesta |
-| --- | --- | --- |
-| POST | `/api/chat/sesiones` | `{ canal }` → `{ sesionId }` |
-| POST | `/api/chat/consultas` | `{ sesionId, texto }` → `{ tipo: "respuesta" \| "escalamiento", texto, intent, confianza, dependencia }` |
-| POST | `/api/chat/sesiones/{id}/cerrar` | — |
-| GET | `/api/chat/temas` | `[{ id, etiqueta, consulta }]` |
-| POST | `/api/admin/auth/login` | `{ correo, password }` → `{ token, usuario }` |
-| GET | `/api/admin/metricas?rango=7d` | totales, tasa de resolución, serie por día, top de intenciones |
-| GET | `/api/admin/intenciones?q=&categoria=&page=` | lista paginada |
-| GET / PUT | `/api/admin/intenciones/{id}` | detalle / editar |
-| POST | `/api/admin/intenciones` | crear intención con su primera respuesta |
-| POST | `/api/admin/intenciones/{id}/respuestas` | `{ texto }` |
-| PATCH | `/api/admin/intenciones/{id}/respuestas/{rid}` | `{ texto?, activa? }` |
-
-Las rutas `/api/admin/*` llevan `Authorization: Bearer <JWT>`. Un `401` cierra la sesión del panel; un `503` en el chat muestra el mensaje de servicio no disponible con el contacto de atención.
-
-## Estructura
-
-```
-src/
-├── components/
-│   ├── chat/      ChatWidget, MessageList, InputBox, TypingIndicator, QuickTopics, EscalationCard
-│   ├── admin/     AdminLayout, Drawer
-│   └── charts/    StatTile, ColumnChart, BarList
-├── pages/
-│   ├── PortalDemoPage.jsx
-│   └── admin/     LoginPage, DashboardPage, KnowledgeBasePage, IntentEditor, NewIntentForm
-├── hooks/         useChat (sesión y conversación), useAuth (JWT), useTheme, useOnlineStatus
-├── services/
-│   ├── chatService.js / adminService.js   eligen simulador o API real
-│   ├── chatApi.js / adminApi.js            llamadas REST reales
-│   └── mock/                               motor PLN simulado y datos de ejemplo
-└── styles/        tokens de diseño (modo claro y oscuro)
-```
+Desde el panel también se crean intenciones con sus ejemplos y el motor PLN se reentrena solo.
+Los textos, correos y enlaces son **de demostración**: el enlace institucional debe validarlos antes del
+piloto (RD-01, RD-03, RD-04).
 
 ## Relación con los requisitos
 
-| Requisito | Dónde se cumple en el frontend |
+| Requisito | Dónde se cumple |
 | --- | --- |
-| RF-01 Consulta en lenguaje natural (≤ 500) | `InputBox.jsx`: contador, bloqueo de envío vacío o excedido, indicador inmediato |
-| RF-03 Respuesta automática | `useChat.js` → `chatService.enviarConsulta` |
-| RF-05 Escalamiento < 60 % | `EscalationCard.jsx`: dependencia, correo, enlace y «Enviar mi consulta por correo» |
-| RF-07 Panel de administración | `KnowledgeBasePage.jsx`, `IntentEditor.jsx` (cambios visibles en el chat al instante) |
-| RF-08 Multiplataforma (360–1920 px) | `chat.css` y `admin.css`: pantalla completa en móvil |
-| RNF-08 Fiabilidad | Aviso sin conexión, reintento ante errores de red y tiempo de espera |
-| RD-02 Privacidad | Sesiones anónimas (`sesionId`), aviso de Ley 1581 en el saludo |
-| UC-09 Fin de sesión | Botón «Finalizar conversación» y cierre automático tras 30 min de inactividad |
+| RF-01 Consulta ≤ 500 caracteres | `TextoConsulta` (dominio) + contador del `InputBox` |
+| RF-02 Intención, entidades, confianza (≥ 85 %) | Servicio PLN + `RasaAdapter`; `python -m app.evaluar` |
+| RF-03 / RF-04 Respuesta automática, ≥ 30 intenciones | `ServicioConversacion`, `SelectorRespuesta`; 31 intenciones temáticas |
+| RF-05 Escalamiento < 60 % | `PoliticaEscalamiento` + `EscalationCard` con datos de la dependencia |
+| RF-06 Registro sin datos personales | Tabla `consultas`, sesiones anónimas `SES-AAAA-XXXXXXXX` |
+| RF-07 Panel, cambios en < 5 min sin reiniciar | Caché invalidada por evento; reentrenamiento automático del PLN |
+| RNF-01 / RNF-05 Tiempo de respuesta | Medido en la prueba E2E y en la de carga |
+| RNF-02 Disponibilidad ≥ 95 % | Chequeos de salud cada minuto; indicador real en el dashboard |
+| RNF-03 Seguridad | JWT 8 h, BCrypt, bloqueo tras 5 intentos, roles, CORS, cabeceras, auditoría |
+| RNF-07 Mantenibilidad | Base de conocimiento editable desde el panel; arquitectura hexagonal |
+| RNF-08 Fiabilidad | Timeouts, circuit breaker, 503 con datos de contacto, aviso sin conexión |
+| UC-14 / UC-15 / UC-16 | Páginas Usuarios, Historial (CSV) y Configuración del panel |

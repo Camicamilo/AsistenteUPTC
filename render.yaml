@@ -1,0 +1,60 @@
+# Blueprint de Render (https://render.com/docs/blueprint-spec) para desplegar gratis:
+#   - asistente-web     sitio estático (React)            -> no consume horas de instancia
+#   - asistente-api     servicio web Docker (Spring Boot)
+#   - asistente-pln     servicio web Docker (servicio PLN)
+# La base de datos va en Neon (PostgreSQL gratis sin vencimiento). Ver docs/DESPLIEGUE.md.
+services:
+  - type: web
+    name: asistente-pln
+    runtime: docker
+    plan: free
+    rootDir: pln
+    healthCheckPath: /health
+    envVars:
+      - key: PLN_TOKEN
+        generateValue: true
+
+  - type: web
+    name: asistente-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_URL          # jdbc:postgresql://<host-de-neon>/<base>?sslmode=require
+        sync: false
+      - key: DB_USUARIO
+        sync: false
+      - key: DB_CLAVE
+        sync: false
+      - key: DB_POOL
+        value: "5"
+      - key: PLN_URL         # https://asistente-pln.onrender.com (la URL pública del servicio PLN)
+        sync: false
+      - key: PLN_TOKEN
+        fromService:
+          type: web
+          name: asistente-pln
+          envVarKey: PLN_TOKEN
+      - key: PLN_TIMEOUT_MS
+        value: "2500"
+      - key: JWT_SECRETO
+        generateValue: true
+      - key: CORS_ORIGENES   # https://asistente-web.onrender.com
+        sync: false
+
+  - type: web
+    name: asistente-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_USE_MOCK
+        value: "false"
+      - key: VITE_API_BASE_URL   # https://asistente-api.onrender.com/api
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
